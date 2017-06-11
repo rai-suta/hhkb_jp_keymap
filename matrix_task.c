@@ -79,7 +79,7 @@ static void cancel_capsLock(void)
     return;
   }
   
-  uint8_t isShiftOn = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
+  bool isShiftOn = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
   if ( isShiftOn ){
     return;
   }
