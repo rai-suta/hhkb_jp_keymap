@@ -1,7 +1,8 @@
-#ifndef AC_MACRO_H
-#define AC_MACRO_H
+#ifndef ACTION_MACRO_RAISUTA_H
+#define ACTION_MACRO_RAISUTA_H
 
 #include "quantum.h"
+#include "tmk_core/common/action_macro.h"
 
 enum osk_state {
   OSK_NONE = 0,
@@ -44,4 +45,4 @@ extern struct OneShotKeysStatus {
                   ( del_macro_mods(mods), MACRO(TYPE(kc), END) ), \
                   ( del_macro_mods(mods), MACRO_NONE ) )
 
-#endif /* AC_MACRO_H */
+#endif /* ACTION_MACRO_RAISUTA_H */

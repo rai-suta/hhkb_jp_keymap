@@ -1,6 +1,6 @@
 #include "hhkb.h"
 #include "config.h"
-#include "ac_macro.h"
+#include "action_macro.h"
 
 // Keycodes definition
 #define _______                 ( KC_TRNS )
