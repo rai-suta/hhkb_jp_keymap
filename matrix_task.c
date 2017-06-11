@@ -163,8 +163,10 @@ static void __print_oneShotKeyState(void)
   static enum osk_state last_state;
 
   if (last_state != oskStatus.keyState){
-    dprintf("oneShotKeyState\n"
-            "    = %d\n", oneShotKeyState );
+    dprintf("oskStatus\n"
+            "  .keyState = %d\n"
+            "  .lastMacroId = %d\n", 
+              oskStatus.keyState, oskStatus.lastMacroId );
     last_state = oskStatus.keyState;
   }
 }

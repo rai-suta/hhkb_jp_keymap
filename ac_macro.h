@@ -9,7 +9,6 @@ enum osk_state {
   OSK_PRESS,
   OSK_MAINTAIN,
 };
-#define oneShotKeyState (oskStatus.keyState)
 
 extern struct OneShotKeysStatus {
   enum osk_state keyState;
