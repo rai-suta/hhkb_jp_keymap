@@ -3,17 +3,17 @@
 
 struct OneShotKeysStatus oskStatus;
 
-extern uint8_t matrix_key_count(void);  /* matrix.c */
+extern bool matrix_key_count(void);  /* matrix.c */
 static void cancel_capsLock(void);
 static void process_oneshotKey(void);
 
 #ifdef CONSOLE_ENABLE
 
-  static void __print_matrix(void);
 # ifdef PRINT_MATRIX_ENABLE
+    static void __print_matrix(void);
 #   define print_matrix()     do { if (debug_enable) __print_matrix(); } while (0)
 # else
-#   define print_matrix()     do { (void)__print_matrix; } while(0)
+#   define print_matrix()     do { } while(0)
 # endif
 
   static void __print_layer_state(void);
@@ -135,12 +135,15 @@ static void process_oneshotKey(void)
 
 #ifdef CONSOLE_ENABLE
 
+# ifdef PRINT_MATRIX_ENABLE
 static void __print_matrix(void)
 {
+  // error: 'matrix_is_modified' is deprecated.
   if ( matrix_is_modified() ){
     matrix_print();
   }
 }
+# endif
 
 static void __print_layer_state(void)
 {
