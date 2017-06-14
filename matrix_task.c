@@ -25,13 +25,13 @@ static void process_oneshotKey(void);
   static void __print_mods(void);
 # define print_mods()         do { if (debug_enable) __print_mods(); } while (0)
 
-#else
+#else   /* CONSOLE_ENABLE */
 
 # define print_matrix()
 # define print_layer_state()
 # define print_oneShotKeyState()
 
-#endif
+#endif  /* CONSOLE_ENABLE */
 
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void)
