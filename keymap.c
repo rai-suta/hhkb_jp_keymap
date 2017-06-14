@@ -77,6 +77,17 @@ enum keymap_layer{
     ,KL_STNG            //    : 
   ),
 };
+static void toggle_default_layer( enum keymap_layer layer );
+
+struct for_mods {
+  uint8_t real, weak, macro;
+};
+static struct for_mods storeMods( void );
+static void restoreMods( struct for_mods mods );
+static uint8_t allMods( struct for_mods mods );
+static void clearAllMods( void );
+
+static const uint8_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_SECO   ( M(UMI_SWITCH_EDIT_CRSR_OSKEY) )
@@ -210,28 +221,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 };
 
-static void toggle_default_layer(enum keymap_layer layer)
-{
-  default_layer_xor( 1UL << layer );
-  layer_state = default_layer_state;
-}
-
 const uint16_t PROGMEM fn_actions[] = {
 };
-
-struct for_mods {
-  uint8_t real, weak, macro;
-};
-#define STORE_MODS()          (struct for_mods){          \
-                                .real = get_mods(),       \
-                                .weak = get_weak_mods(),  \
-                                .macro = get_macro_mods() \
-                              }
-#define RESTORE_MODS( mods )  do {  \
-                                set_mods( mods.real );        \
-                                set_weak_mods( mods.weak );   \
-                                set_macro_mods( mods.macro ); \
-                              } while(0)
 
 const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
@@ -284,17 +275,16 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t o
     case UMI_PAIRED_SQUARE_BRANCKETS: {
       static struct for_mods mods;
       if ( record->event.pressed ){
-        mods = STORE_MODS();
+        mods = storeMods();
         clear_mods();
         clear_weak_mods();
         clear_macro_mods();
       } else {
-        RESTORE_MODS( mods );
+        restoreMods( mods );
       }
 
-      uint8_t all_mods = ( mods.real | mods.weak | mods.macro ), 
-              shift_mask = ( MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT) );
-      return (all_mods & shift_mask)
+      uint8_t isShifted = allMods( mods ) & SHIFT_MASK;
+      return (isShifted)
                 ? MACRODOWN(  D(LSHIFT),
                                 T(LBRACKET_JP), 
                                 T(RBRACKET_JP),
@@ -353,3 +343,42 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t o
 
   return MACRO_NONE;
 }
+
+static void 
+toggle_default_layer(enum keymap_layer layer)
+{
+  default_layer_xor( 1UL << layer );
+  layer_state = default_layer_state;
+}
+
+static struct for_mods 
+storeMods( void )
+{
+  return (struct for_mods){ .real = get_mods(),
+                            .weak = get_weak_mods(),
+                            .macro = get_macro_mods() };
+}
+
+static void 
+restoreMods( struct for_mods mods )
+{
+  set_mods( mods.real );
+  set_weak_mods( mods.weak );
+  set_macro_mods( mods.macro );
+}
+
+static uint8_t 
+allMods( struct for_mods mods )
+{
+  return ( mods.real | mods.weak | mods.macro );
+}
+
+static void 
+clearAllMods( void )
+{
+  clear_mods();
+  clear_weak_mods();
+  clear_macro_mods();
+  clear_oneshot_mods();
+}
+
