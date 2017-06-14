@@ -242,19 +242,23 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t o
     } break;
 
     case UMI_SANDS: {
-      return MACRO_ONESHOT_MODIFIER( MOD_LSFT, KC_SPACE );
+      return MACRO_ONESHOT_MODIFIER( MOD_BIT(KC_LSHIFT), KC_SPACE );
     } break;
 
     case UMI_SWITCH_EDIT_CRSR_OSKEY: {
       return MACRO_ONESHOT( ( layer_on(KL_EDIT_CRSR),         MACRO_NONE ),
-                            ( layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ),
-                            ( layer_and(~LAYER_MASK_OF_EDIT), MACRO_NONE ));
+                            ( clearAllMods(), 
+                              layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ),
+                            ( clearAllMods(), 
+                              layer_and(~LAYER_MASK_OF_EDIT), MACRO_NONE ));
     } break;
 
     case UMI_SWITCH_INPUT_OSKEY: {
       return MACRO_ONESHOT( ( layer_on(KL_INPUT),              MACRO_NONE ),
-                            ( layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ),
-                            ( layer_and(~LAYER_MASK_OF_INPUT), MACRO_NONE ));
+                            ( clearAllMods(), 
+                              layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ),
+                            ( clearAllMods(), 
+                              layer_and(~LAYER_MASK_OF_INPUT), MACRO_NONE ));
     } break;
 
     case UMI_SELECT_WORD: {
