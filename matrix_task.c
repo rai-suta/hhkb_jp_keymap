@@ -102,14 +102,21 @@ static void process_oneshotKey(void)
   static uint8_t lastKeyCount;
 
   switch (oskStatus.keyState){
-    case OSK_DOWN:{
+    case OSK_DOWN: {
       lastTime = timer_read();
       lastKeyCount = matrix_key_count();
       oskStatus.keyState = OSK_PRESS;
     } break;
 
-    case OSK_PRESS:
-    case OSK_MAINTAIN:{
+    case OSK_PRESS: {
+#     if defined(ONESHOTKEY_TIMEOUT)
+      if ( timer_elapsed(lastTime) > ONESHOTKEY_TIMEOUT ){
+        oskStatus.keyState = OSK_MAINTAIN;
+        dprintf( "OneShotKey time-out\n" );
+      }
+#     endif /* ONESHOTKEY_TIMEOUT */
+
+    case OSK_MAINTAIN: ;
       uint8_t keyCount = matrix_key_count();
       if ( keyCount > lastKeyCount ){
         oskStatus.keyState = OSK_NONE;
@@ -123,14 +130,6 @@ static void process_oneshotKey(void)
     } break;
   }
   
-#if defined(ONESHOTKEY_TIMEOUT)
-  if ( timer_elapsed(lastTime) > ONESHOTKEY_TIMEOUT ){
-#else
-  if ( (void)lastTime, 0 ){
-#endif
-    oskStatus.keyState = OSK_MAINTAIN;
-    dprintf( "OneShotKey time-out\n" );
-  }
 }
 
 #ifdef CONSOLE_ENABLE
