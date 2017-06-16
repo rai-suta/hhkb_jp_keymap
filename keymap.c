@@ -36,7 +36,18 @@ enum user_macro_id{
   UMI_TOGGLE_PLN_DVORAK,
   UMI_TOGGLE_MOD_ARROW,
   UMI_TOGGLE_MOD_SANDS,
+  UMI_1_B,
+  UMI_2_C,
+  UMI_3_D,
+  UMI_4_E,
+  UMI_5_F,
+  UMI_6_,
+  UMI_7_,
+  UMI_8_,
+  UMI_9_,
+  UMI_0_A,
 };
+#define UM( id )  ( M(UMI_##id) )
 
 // This indicates which part of 32bit layer state(0-7)
 //    ACTION_LAYER_BIT_AND( ..., , )
@@ -205,7 +216,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [KL_INPUT] = KEYMAP_JP(
     _______, _______,   M_PDQ, _______, _______, _______, _______,   M_PSQ,   M_PRB, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SLCK, KC_PAUS,  KC_INS,  M_PSB,
-    _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0, _______, _______, _______,
+    _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A), _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______,   M_PAB, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, OSL_STG,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
@@ -340,6 +351,29 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t o
       if ( !(record->event.pressed) ){
         toggle_default_layer( KL_MOD_RSIDE );
         //eeconfig_update_default_layer( default_layer_state );
+      }
+    } break;
+
+    case UMI_1_B ... UMI_0_A: {
+      if ( record->event.pressed ){
+        uint8_t kc;
+        uint8_t isShifted = allMods( storeMods() ) & SHIFT_MASK;
+        if ( isShifted ){
+          switch (macro_id){
+            case UMI_1_B: { kc = KC_B; } break;
+            case UMI_2_C: { kc = KC_C; } break;
+            case UMI_3_D: { kc = KC_D; } break;
+            case UMI_4_E: { kc = KC_E; } break;
+            case UMI_5_F: { kc = KC_F; } break;
+            case UMI_0_A: { kc = KC_A; } break;
+            default:      { kc = KC_NO; } break;
+          }
+        }
+        else {
+          kc = KC_1 + (macro_id - UMI_1_B);
+        }
+        register_code( kc );
+        unregister_code( kc );
       }
     } break;
   }
