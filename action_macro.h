@@ -40,9 +40,9 @@ extern struct OneShotKeysStatus {
     ret;                                            \
   })
 
-#define MACRO_ONESHOT_MODIFIER(mods, kc)                          \
-  MACRO_ONESHOT(  ( add_macro_mods(mods), MACRO_NONE ),           \
-                  ( del_macro_mods(mods), MACRO(TYPE(kc), END) ), \
-                  ( del_macro_mods(mods), MACRO_NONE ) )
+#define MACRO_ONESHOT_MODIFIER(mods, kc)  \
+  MACRO_ONESHOT(  ( add_macro_mods(mods), send_keyboard_report(), MACRO_NONE ),           \
+                  ( del_macro_mods(mods), send_keyboard_report(), MACRO(TYPE(kc), END) ), \
+                  ( del_macro_mods(mods), send_keyboard_report(), MACRO_NONE ) )
 
 #endif /* ACTION_MACRO_RAISUTA_H */
