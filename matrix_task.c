@@ -171,22 +171,24 @@ static void __print_oneShotKeyState(void)
 }
 
 struct for_mods {
-  uint8_t real, weak, macro;
+  uint8_t real, weak, macro, oneshot;
 };
 #define EQ_MODS( x, y )   ( x.real == y.real      \
                             && x.weak == y.weak   \
-                            && x.macro == y.macro )
+                            && x.macro == y.macro \
+                            && x.oneshot == y.oneshot )
 
 static void __print_mods(void)
 {
   static struct for_mods last_mods;
-  struct for_mods mods = { get_mods(), get_weak_mods(), get_macro_mods() };
+  struct for_mods mods = { get_mods(), get_weak_mods(), get_macro_mods(), get_oneshot_mods() };
 
   if ( !EQ_MODS(last_mods, mods) ){
     dprintf("mods\n"
             "    .real  = %08b\n"
             "    .weak  = %08b\n"
-            "    .macro = %08b\n" , mods.real, mods.weak, mods.macro );
+            "    .macro = %08b\n" 
+            "    .oneshot = %08b\n", mods.real, mods.weak, mods.macro, mods.oneshot );
     last_mods = mods;
   }
 }

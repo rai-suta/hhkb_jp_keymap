@@ -91,7 +91,7 @@ enum keymap_layer{
 static void toggle_default_layer( enum keymap_layer layer );
 
 struct for_mods {
-  uint8_t real, weak, macro;
+  uint8_t real, weak, macro, oneshot;
 };
 static struct for_mods storeMods( void );
 static void restoreMods( struct for_mods mods );
@@ -393,7 +393,8 @@ storeMods( void )
 {
   return (struct for_mods){ .real = get_mods(),
                             .weak = get_weak_mods(),
-                            .macro = get_macro_mods() };
+                            .macro = get_macro_mods(),
+                            .oneshot = get_oneshot_mods() };
 }
 
 static void 
@@ -402,12 +403,16 @@ restoreMods( struct for_mods mods )
   set_mods( mods.real );
   set_weak_mods( mods.weak );
   set_macro_mods( mods.macro );
+  set_oneshot_mods( mods.oneshot );
 }
 
 static uint8_t 
 allMods( struct for_mods mods )
 {
-  return ( mods.real | mods.weak | mods.macro );
+  return (  mods.real 
+            | mods.weak 
+            | mods.macro 
+            | mods.oneshot );
 }
 
 static void 
