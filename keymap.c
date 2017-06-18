@@ -4,12 +4,26 @@
 
 // Keycodes definition
 #define _______                 ( KC_TRNS )
-#define KC_LBRACKET_JP          ( KC_RBRACKET )
-#define KC_RBRACKET_JP          ( KC_BSLASH )
-#define KC__DBLQUOTE_JP         ( KC_2 )
-#define KC__SGLQUOTE_JP         ( KC_7 )
-#define KC__LRBRACKET_JP        ( KC_8 )
-#define KC__RRBRACKET_JP        ( KC_9 )
+#ifdef JIS_KEYBOARD
+  // JIS keyboard layout
+# define KC_LBRACKET_KL         ( KC_RBRACKET )
+# define KC_RBRACKET_KL         ( KC_BSLASH )
+# define KC__LR_BRACKET_KL      ( KC_8 )
+# define KC__RR_BRACKET_KL      ( KC_9 )
+# define KC__LA_BRANKETS_KL     ( KC_COMMA )
+# define KC__RA_BRANKETS_KL     ( KC_DOT )
+# define KC__SGLQUOTE_KL        ( KC_7 )
+# define KC__DBLQUOTE_KL        ( KC_2 )
+#else
+  // ISO keyboard layout
+# define KC_LBRACKET_KL         ( KC_LBRACKET )
+# define KC_RBRACKET_KL         ( KC_RBRACKET )
+# define KC__LR_BRACKET_KL      ( KC_9 )
+# define KC__RR_BRACKET_KL      ( KC_0 )
+# define KC__LA_BRANKETS_KL     ( KC_COMMA )
+# define KC__RA_BRANKETS_KL     ( KC_DOT )
+# define KC_SGLQUOTE_KL         ( KC_QUOT )
+#endif
 
 // Fn keys definition.
 //    fn_actions[FN2IDX(...)]
@@ -28,11 +42,7 @@ enum user_macro_id{
   UMI_DELETE_FORWARD_WORD,
   UMI_DELETE_BACKWARD_WORD,
   UMI_SELECT_WORD,
-  UMI_PAIRED_ROUND_BRANCKETS,   // type ()
-  UMI_PAIRED_SQUARE_BRANCKETS,  // type []
-  UMI_PAIRED_ANGLE_BRANKETS,    // type <>
-  UMI_PAIRED_DOUBLE_QUOTATION,  // type ""
-  UMI_PAIRED_SINGLE_QUOTATION,  // type ''
+  UMI_PAIRED_BRANKETS,
   UMI_TOGGLE_PLN_DVORAK,
   UMI_TOGGLE_MOD_ARROW,
   UMI_TOGGLE_MOD_SANDS,
@@ -48,6 +58,7 @@ enum user_macro_id{
   UMI_0_A,
 };
 #define UM( id )  ( M(UMI_##id) )
+static const macro_t* getMacro_pairedBrankets( keyrecord_t *record );
 
 // Keymap layer specifier
 //    keymaps[...]
@@ -195,16 +206,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
-# define M_PRB    ( M(UMI_PAIRED_ROUND_BRANCKETS) )
-# define M_PSB    ( M(UMI_PAIRED_SQUARE_BRANCKETS) )
-# define M_PAB    ( M(UMI_PAIRED_ANGLE_BRANKETS) )
-# define M_PDQ    ( M(UMI_PAIRED_DOUBLE_QUOTATION) )
-# define M_PSQ    ( M(UMI_PAIRED_SINGLE_QUOTATION) )
+# define M_PB     ( M(UMI_PAIRED_BRANKETS) )
   [KL_INPUT] = KEYMAP_JP(
-    _______, _______,   M_PDQ, _______, _______, _______, _______,   M_PSQ,   M_PRB, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SLCK, KC_PAUS,  KC_INS,  M_PSB,
-    _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A), _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______,   M_PAB, _______, _______, _______, _______, _______,
+    _______, _______,    M_PB, _______, _______, _______, _______,    M_PB,    M_PB,    M_PB, _______, _______, _______, _______, _______,
+    _______, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
+    _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A),    M_PB, _______, _______,
+    _______, _______, _______, _______, _______, _______, _______, _______,    M_PB, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, OSL_STG,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
 # define M_TPD    ( M(UMI_TOGGLE_PLN_DVORAK) )
@@ -267,58 +274,8 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
                           U(LCTL), END );
     } break;
 
-    case UMI_PAIRED_ROUND_BRANCKETS: {
-      return MACRODOWN( D(LSFT), 
-                          T(_LRBRACKET_JP), 
-                          T(_RRBRACKET_JP), 
-                          U(LSFT), 
-                        T(LEFT), END );
-    } break;
-
-    case UMI_PAIRED_SQUARE_BRANCKETS: {
-      static struct for_mods mods;
-      if ( record->event.pressed ){
-        mods = storeMods();
-        clearAllMods();
-      } else {
-        restoreMods( mods );
-      }
-      send_keyboard_report();
-
-      uint8_t isShifted = allMods( mods ) & SHIFT_MASK;
-      return (isShifted)
-                ? MACRODOWN(  D(LSHIFT),
-                                T(LBRACKET_JP), 
-                                T(RBRACKET_JP),
-                                U(LSHIFT),
-                              T(LEFT), END )
-                : MACRODOWN(  T(LBRACKET_JP), 
-                              T(RBRACKET_JP), 
-                              T(LEFT), END );
-    } break;
-
-    case UMI_PAIRED_ANGLE_BRANKETS: {
-      return MACRODOWN( D(LSFT), 
-                          T(COMMA), 
-                          T(DOT), 
-                          U(LSFT), 
-                        T(LEFT), END );
-    } break;
-
-    case UMI_PAIRED_DOUBLE_QUOTATION: {
-      return MACRODOWN( D(LSFT), 
-                          T(_DBLQUOTE_JP), 
-                          T(_DBLQUOTE_JP), 
-                          U(LSFT), 
-                        T(LEFT), END );
-    } break;
-
-    case UMI_PAIRED_SINGLE_QUOTATION: {
-      return MACRODOWN( D(LSFT), 
-                          T(_SGLQUOTE_JP), 
-                          T(_SGLQUOTE_JP), 
-                          U(LSFT), 
-                        T(LEFT), END );
+    case UMI_PAIRED_BRANKETS: {
+      return getMacro_pairedBrankets( record );
     } break;
 
     case UMI_TOGGLE_PLN_DVORAK: {
@@ -362,6 +319,119 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
         }
         register_code( kc );
         unregister_code( kc );
+      }
+    } break;
+  }
+
+  return MACRO_NONE;
+}
+
+static const macro_t* 
+getMacro_pairedBrankets( keyrecord_t *record )
+{
+  keypos_t key = record->event.key;
+  
+  cli();
+  
+  uint32_t layer_state_mem = layer_state;
+  layer_state = 0;
+  uint16_t keycode = keymap_key_to_keycode( layer_switch_get_layer(key), key );
+  layer_state = layer_state_mem;
+
+  sei();
+
+  static struct for_mods mods;
+  if ( record->event.pressed ){
+    mods = storeMods();
+    clearAllMods();
+  } else {
+    restoreMods( mods );
+  }
+  send_keyboard_report();
+
+  bool isShifted = allMods( mods ) & SHIFT_MASK;
+  
+  switch ( keycode ){
+#   ifdef KC_LBRACKET_KL
+    case KC_LBRACKET_KL: {
+      if ( isShifted ){
+        return MACRODOWN( D(LSFT),
+                            T(LBRACKET_KL),
+                            T(RBRACKET_KL),
+                            U(LSFT),
+                          T(LEFT), END );
+      }
+      else {
+        return MACRODOWN( T(LBRACKET_KL),
+                          T(RBRACKET_KL),
+                          T(LEFT), END );
+      }
+    } break;
+#   endif
+
+#   ifdef KC__LR_BRACKET_KL
+    case KC__LR_BRACKET_KL: {
+      return MACRODOWN( D(LSFT),
+                          T(_LR_BRACKET_KL),
+                          T(_RR_BRACKET_KL),
+                          U(LSFT),
+                        T(LEFT), END );
+    } break;
+#   endif
+
+#   ifdef KC__LA_BRANKETS_KL
+    case KC__LA_BRANKETS_KL: {
+      return MACRODOWN( D(LSFT),
+                          T(_LA_BRANKETS_KL),
+                          T(_RA_BRANKETS_KL),
+                          U(LSFT),
+                        T(LEFT), END );
+    } break;
+#   endif
+
+#   ifdef KC_SGLQUOTE_KL
+    case KC_SGLQUOTE_KL: {
+      if ( isShifted ){
+        return MACRODOWN( D(LSFT),
+                            T(SGLQUOTE_KL),
+                            T(SGLQUOTE_KL),
+                            U(LSFT),
+                          T(LEFT), END );
+      }
+      else {
+        return MACRODOWN( T(SGLQUOTE_KL),
+                          T(SGLQUOTE_KL),
+                          T(LEFT), END );
+      }
+    } break;
+#   endif
+
+#   ifdef KC__SGLQUOTE_KL
+    case KC__SGLQUOTE_KL: {
+      return MACRODOWN( D(LSFT),
+                          T(_SGLQUOTE_KL),
+                          T(_SGLQUOTE_KL),
+                          U(LSFT),
+                        T(LEFT), END );
+    } break;
+#   endif
+
+#   ifdef KC__DBLQUOTE_KL
+    case KC__DBLQUOTE_KL: {
+      return MACRODOWN( D(LSFT),
+                          T(_DBLQUOTE_KL),
+                          T(_DBLQUOTE_KL),
+                          U(LSFT),
+                        T(LEFT), END );
+    } break;
+#   endif
+
+    default: {
+      if ( record->event.pressed ){
+        register_code( keycode );
+      }
+      else {
+        unregister_code( keycode );
       }
     } break;
   }
