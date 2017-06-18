@@ -34,6 +34,7 @@ static void process_oneshotKey(void);
 #endif  /* CONSOLE_ENABLE */
 
 // Runs just one time when the keyboard initializes.
+// TODO: Call from "hhkb/matrix.c".
 void matrix_init_user(void)
 {
 }

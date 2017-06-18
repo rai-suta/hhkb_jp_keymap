@@ -49,45 +49,32 @@ enum user_macro_id{
 };
 #define UM( id )  ( M(UMI_##id) )
 
-// This indicates which part of 32bit layer state(0-7)
-//    ACTION_LAYER_BIT_AND( ..., , )
-enum part_of_layer{
-  POL_PLAIN = 0,
-  POL_MOD,
-  POL_EDIT,
-  POL_INPUT,
-  POL_SETTING,
-  //LYR_ = ...7,
-};
-#define PART_OF( part, lyr, ... )   lyr = 4 * part, ##__VA_ARGS__
-#define LAYER_MASK_OF_EDIT          ( 0xFUL << (4 * POL_EDIT) )
-#define LAYER_MASK_OF_INPUT         ( 0xFUL << (4 * POL_INPUT) )
-
 // Keymap layer specifier
 //    keymaps[...]
 enum keymap_layer{
-  PART_OF( POL_PLAIN    // Plain keys
-    ,KL_PLN_QWERTY      //    : QWERTY
-    ,KL_PLN_DVORAK      //    : DVORAK
-  ),
-  PART_OF( POL_MOD      // Modifier
-    ,KL_MOD_FN          //    : Fn keys
-    ,KL_MOD_RSIDE       //    : Right side modifier
-    ,KL_MOD_SANDS       //    : Space and Shift
-  ),
-  PART_OF( POL_EDIT     // Editing
-    ,KL_EDIT_CRSR       //    : Cursor
-    ,KL_EDIT_SLCT       //    : Select
-    ,KL_EDIT_SCRL       //    : Scroll
-    ,KL_EDIT_MEDIA      //    : Media operation
-  ),
-  PART_OF( POL_INPUT    // Input
-    ,KL_INPUT           //    : 
-  ),
-  PART_OF( POL_SETTING  // Setting switch
-    ,KL_STNG            //    : 
-  ),
+  KL_NONE = -1
+                      // Plain keys
+  ,KL_PLN_QWERTY      //    : QWERTY
+  ,KL_PLN_DVORAK      //    : DVORAK
+                      // Modifier
+  ,KL_MOD_FN          //    : Fn keys
+  ,KL_MOD_RSIDE       //    : Right side modifier
+  ,KL_MOD_SANDS       //    : Space and Shift
+                      // Editing
+  ,KL_EDIT_CRSR       //    : Cursor
+  ,KL_EDIT_SLCT       //    : Select
+  ,KL_EDIT_SCRL       //    : Scroll
+  ,KL_EDIT_MEDIA      //    : Media operation
+                      // Input
+  ,KL_INPUT           //    : 
+                      // Setting switch
+  ,KL_STNG            //    : 
 };
+#define LAYER_MASK_OF_EDIT          ( 1UL << KL_EDIT_CRSR   \
+                                      | 1UL << KL_EDIT_SLCT \
+                                      | 1UL << KL_EDIT_SCRL \
+                                      | 1UL << KL_EDIT_MEDIA )
+#define LAYER_MASK_OF_INPUT         ( 1UL << KL_INPUT )
 static void toggle_default_layer( enum keymap_layer layer );
 
 struct for_mods {
@@ -235,7 +222,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 const uint16_t PROGMEM fn_actions[] = {
 };
 
-const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
+const macro_t*
+action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
   switch (macro_id) {
     case UMI_DELETE_FORWARD_WORD: {
