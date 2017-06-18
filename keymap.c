@@ -258,18 +258,18 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t o
 
     case UMI_SWITCH_EDIT_CRSR_OSKEY: {
       return MACRO_ONESHOT( ( layer_on(KL_EDIT_CRSR),         MACRO_NONE ),
-                            ( clearAllMods(), send_keyboard_report(), 
+                            ( clearAllMods(), 
                               layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ),
-                            ( clearAllMods(), send_keyboard_report(), 
-                              layer_and(~LAYER_MASK_OF_EDIT), MACRO_NONE ));
+                            ( clearAllMods(), 
+                              layer_and(~LAYER_MASK_OF_EDIT), MACRO_SEND_NONE ));
     } break;
 
     case UMI_SWITCH_INPUT_OSKEY: {
       return MACRO_ONESHOT( ( layer_on(KL_INPUT),              MACRO_NONE ),
-                            ( clearAllMods(), send_keyboard_report(), 
+                            ( clearAllMods(), 
                               layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ),
-                            ( clearAllMods(), send_keyboard_report(), 
-                              layer_and(~LAYER_MASK_OF_INPUT), MACRO_NONE ));
+                            ( clearAllMods(), 
+                              layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ));
     } break;
 
     case UMI_SELECT_WORD: {
