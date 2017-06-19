@@ -93,7 +93,7 @@ struct for_mods {
 };
 static struct for_mods storeMods( void );
 static void restoreMods( struct for_mods mods );
-static uint8_t allMods( struct for_mods mods );
+static uint8_t anyMods( struct for_mods mods );
 static void clearAllMods( void );
 
 static const uint8_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
@@ -302,7 +302,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     case UMI_1_B ... UMI_0_A: {
       if ( record->event.pressed ){
         uint8_t kc;
-        uint8_t isShifted = allMods( storeMods() ) & SHIFT_MASK;
+        uint8_t isShifted = anyMods( storeMods() ) & SHIFT_MASK;
         if ( isShifted ){
           switch (macro_id){
             case UMI_1_B: { kc = KC_B; } break;
@@ -349,7 +349,7 @@ getMacro_pairedBrankets( keyrecord_t *record )
   }
   send_keyboard_report();
 
-  bool isShifted = allMods( mods ) & SHIFT_MASK;
+  bool isShifted = anyMods( mods ) & SHIFT_MASK;
   
   switch ( keycode ){
 #   ifdef KC_LBRACKET_KL
@@ -465,7 +465,7 @@ restoreMods( struct for_mods mods )
 }
 
 static uint8_t 
-allMods( struct for_mods mods )
+anyMods( struct for_mods mods )
 {
   return (  mods.real 
             | mods.weak 
