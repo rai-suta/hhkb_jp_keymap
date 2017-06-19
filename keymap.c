@@ -443,7 +443,6 @@ static void
 toggle_default_layer(enum keymap_layer layer)
 {
   default_layer_xor( 1UL << layer );
-  layer_state = default_layer_state;
 }
 
 static struct for_mods 
