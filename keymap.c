@@ -329,26 +329,23 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 static const macro_t* 
 getMacro_pairedBrankets( keyrecord_t *record )
 {
+  // Get keycode at default-layer.
   keypos_t key = record->event.key;
-  
-  cli();
-  
   uint32_t layer_state_mem = layer_state;
   layer_state = 0;
   uint16_t keycode = keymap_key_to_keycode( layer_switch_get_layer(key), key );
   layer_state = layer_state_mem;
 
-  sei();
-
+  // Evacuation and restoration mods.
   static struct for_mods mods;
   if ( record->event.pressed ){
     mods = storeMods();
     clearAllMods();
-  } else {
+  } 
+  else {
     restoreMods( mods );
   }
   send_keyboard_report();
-
   bool isShifted = anyMods( mods ) & SHIFT_MASK;
   
   switch ( keycode ){
