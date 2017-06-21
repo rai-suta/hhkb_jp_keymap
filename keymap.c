@@ -46,6 +46,7 @@ enum user_macro_id{
   UMI_TOGGLE_PLN_DVORAK,
   UMI_TOGGLE_MOD_ARROW,
   UMI_TOGGLE_MOD_SANDS,
+  UMI_DISPLAY_SETTINGS,
   UMI_1_B,
   UMI_2_C,
   UMI_3_D,
@@ -59,34 +60,39 @@ enum user_macro_id{
 };
 #define UM( id )  ( M(UMI_##id) )
 static const macro_t* getMacro_pairedBrankets( keyrecord_t *record );
+static void action_displaySettings( void );
 
-// Keymap layer specifier
+#define LAYER_IDS( macro )  \
+          macro(PLN_QWERTY) \
+          macro(PLN_DVORAK) \
+          macro(MOD_FN)     \
+          macro(MOD_RSIDE)  \
+          macro(MOD_SANDS)  \
+          macro(EDIT_CRSR)  \
+          macro(EDIT_SLCT)  \
+          macro(EDIT_SCRL)  \
+          macro(EDIT_MEDIA) \
+          macro(INPUT)      \
+          macro(STNG)
+
+// keymap layer specifier
 //    keymaps[...]
+#define ENUMS_KL( id )   KL_##id, 
 enum keymap_layer{
-  KL_NONE = -1
-                      // Plain keys
-  ,KL_PLN_QWERTY      //    : QWERTY
-  ,KL_PLN_DVORAK      //    : DVORAK
-                      // Modifier
-  ,KL_MOD_FN          //    : Fn keys
-  ,KL_MOD_RSIDE       //    : Right side modifier
-  ,KL_MOD_SANDS       //    : Space and Shift
-                      // Editing
-  ,KL_EDIT_CRSR       //    : Cursor
-  ,KL_EDIT_SLCT       //    : Select
-  ,KL_EDIT_SCRL       //    : Scroll
-  ,KL_EDIT_MEDIA      //    : Media operation
-                      // Input
-  ,KL_INPUT           //    : 
-                      // Setting switch
-  ,KL_STNG            //    : 
+  LAYER_IDS( ENUMS_KL )
+  KL_NUM
 };
 #define LAYER_MASK_OF_EDIT          ( 1UL << KL_EDIT_CRSR   \
                                       | 1UL << KL_EDIT_SLCT \
                                       | 1UL << KL_EDIT_SCRL \
                                       | 1UL << KL_EDIT_MEDIA )
 #define LAYER_MASK_OF_INPUT         ( 1UL << KL_INPUT )
+#define LAYER_MASK_OF_STNG          ( 1UL << KL_STNG )
 static void toggle_default_layer( enum keymap_layer layer );
+
+// keymap layer name strings
+#define DEFINE_STR_KL( id )   static const char STR_##id[] PROGMEM = "KL_" #id;
+LAYER_IDS( DEFINE_STR_KL );
 
 struct for_mods {
   uint8_t real, weak, macro, oneshot;
@@ -217,10 +223,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_TPD    ( M(UMI_TOGGLE_PLN_DVORAK) )
 # define M_TMA    ( M(UMI_TOGGLE_MOD_ARROW) )
 # define M_TMS    ( M(UMI_TOGGLE_MOD_SANDS) )
+# define M_DSST   ( M(UMI_DISPLAY_SETTINGS) )
   [KL_STNG] = KEYMAP_JP(
     _______,   M_TPD, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    _______, _______, _______,  M_DSST, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   M_TMA, _______,
     _______, _______, _______, _______, _______,       M_TMS     , _______, _______, _______, _______,   M_TMA,   M_TMA,   M_TMA 
   ),
@@ -296,6 +303,12 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       if ( !(record->event.pressed) ){
         toggle_default_layer( KL_MOD_RSIDE );
         //eeconfig_update_default_layer( default_layer_state );
+      }
+    } break;
+    
+    case UMI_DISPLAY_SETTINGS: {
+      if ( !(record->event.pressed) ){
+        action_displaySettings();
       }
     } break;
 
@@ -434,6 +447,28 @@ getMacro_pairedBrankets( keyrecord_t *record )
   }
 
   return MACRO_NONE;
+}
+
+static void 
+action_displaySettings( void )
+{
+# define LAYER_BIT_WIDTH  ( sizeof(default_layer_state)*8 )
+# define LAYER_KL_NAME( id )   [KL_##id] = STR_##id,
+  static const char* names[] = {
+    LAYER_IDS( LAYER_KL_NAME )
+  };
+
+  // display default_layer_state
+  uint32_t state = default_layer_state;
+  SEND_STRING( "default_layer_state:\n" );
+  for ( int i = 0; i < LAYER_BIT_WIDTH; i++ ){
+    if ( (state & 1U) && (i < KL_NUM) ){
+      SEND_STRING( "  " );
+      send_string( names[i] );
+      SEND_STRING( " = active\n" );
+    }
+    state = state >> 1;
+  }
 }
 
 static void 
