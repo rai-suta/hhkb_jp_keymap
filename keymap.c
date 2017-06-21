@@ -62,7 +62,7 @@ enum user_macro_id{
 static const macro_t* getMacro_pairedBrankets( keyrecord_t *record );
 static void action_displaySettings( void );
 
-#define LAYER_IDS( macro )  \
+#define LAYER_NAMES( macro )  \
           macro(PLN_QWERTY) \
           macro(PLN_DVORAK) \
           macro(MOD_FN)     \
@@ -77,9 +77,9 @@ static void action_displaySettings( void );
 
 // keymap layer specifier
 //    keymaps[...]
-#define ENUMS_KL( id )   KL_##id, 
+#define ENUMS_KL( name )   KL_##name, 
 enum keymap_layer{
-  LAYER_IDS( ENUMS_KL )
+  LAYER_NAMES( ENUMS_KL )
   KL_NUM
 };
 #define LAYER_MASK_OF_EDIT          ( 1UL << KL_EDIT_CRSR   \
@@ -91,8 +91,8 @@ enum keymap_layer{
 static void toggle_default_layer( enum keymap_layer layer );
 
 // keymap layer name strings
-#define DEFINE_STR_KL( id )   static const char STR_##id[] PROGMEM = "KL_" #id;
-LAYER_IDS( DEFINE_STR_KL );
+#define DEFINE_STR_KL( name )   static const char STR_##name[] PROGMEM = "KL_" #name;
+LAYER_NAMES( DEFINE_STR_KL );
 
 struct for_mods {
   uint8_t real, weak, macro, oneshot;
@@ -453,9 +453,9 @@ static void
 action_displaySettings( void )
 {
 # define LAYER_BIT_WIDTH  ( sizeof(default_layer_state)*8 )
-# define LAYER_KL_NAME( id )   [KL_##id] = STR_##id,
+# define LAYER_KL_NAME( name )   [KL_##name] = STR_##name,
   static const char* names[] = {
-    LAYER_IDS( LAYER_KL_NAME )
+    LAYER_NAMES( LAYER_KL_NAME )
   };
 
   // display default_layer_state
