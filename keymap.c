@@ -77,22 +77,24 @@ static void action_displaySettings( void );
 
 // keymap layer specifier
 //    keymaps[...]
-#define ENUMS_KL( name )   KL_##name, 
+#define KL_( name )     KL_##name
+#define KL_COM( name )  KL_(name), 
 enum keymap_layer{
-  LAYER_NAMES( ENUMS_KL )
+  LAYER_NAMES( KL_COM )
   KL_NUM
 };
-#define LAYER_MASK_OF_EDIT          ( 1UL << KL_EDIT_CRSR   \
-                                      | 1UL << KL_EDIT_SLCT \
-                                      | 1UL << KL_EDIT_SCRL \
-                                      | 1UL << KL_EDIT_MEDIA )
-#define LAYER_MASK_OF_INPUT         ( 1UL << KL_INPUT )
-#define LAYER_MASK_OF_STNG          ( 1UL << KL_STNG )
+#define LAYER_MASK_OF_EDIT          ( 1UL << KL_(EDIT_CRSR)   \
+                                      | 1UL << KL_(EDIT_SLCT) \
+                                      | 1UL << KL_(EDIT_SCRL) \
+                                      | 1UL << KL_(EDIT_MEDIA) )
+#define LAYER_MASK_OF_INPUT         ( 1UL << KL_(INPUT) )
+#define LAYER_MASK_OF_STNG          ( 1UL << KL_(STNG) )
 static void toggle_default_layer( enum keymap_layer layer );
 
 // keymap layer name strings
-#define DEFINE_STR_KL( name )   static const char STR_##name[] PROGMEM = "KL_" #name;
-LAYER_NAMES( DEFINE_STR_KL );
+#define STR_( name )    STR_##name
+#define STR_VAR( name ) static const char STR_(name)[] PROGMEM = #name;
+LAYER_NAMES( STR_VAR );
 
 struct for_mods {
   uint8_t real, weak, macro, oneshot;
@@ -453,7 +455,7 @@ static void
 action_displaySettings( void )
 {
 # define LAYER_BIT_WIDTH  ( sizeof(default_layer_state)*8 )
-# define LAYER_KL_NAME( name )   [KL_##name] = STR_##name,
+# define LAYER_KL_NAME( name )   [KL_(name)] = STR_(name),
   static const char* names[] = {
     LAYER_NAMES( LAYER_KL_NAME )
   };
