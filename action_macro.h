@@ -3,49 +3,21 @@
 
 #include "quantum.h"
 #include "tmk_core/common/action_macro.h"
-
-enum osk_state {
-  OSK_NONE = 0,
-  OSK_DOWN,
-  OSK_PRESS,
-  OSK_MAINTAIN,
-};
-
-extern struct OneShotKeysStatus {
-  enum osk_state keyState;
-  uint8_t lastMacroId;
-} oskStatus;
-
-// This macro assigns three types of function key for down, tap, release.
-// The 'down' and 'tap' work when key input as single.
-// The 'down' and 'release' work when key input as combination.
-#define MACRO_ONESHOT(down, tap, release)           \
-  ({                                                \
-    const macro_t* ret;                             \
-    if ( record->event.pressed ){                   \
-      ret = down;                                   \
-      oskStatus = (struct OneShotKeysStatus){       \
-                    .keyState = OSK_DOWN,           \
-                    .lastMacroId = macro_id };      \
-    }                                               \
-    else if ( oskStatus.lastMacroId == macro_id ){  \
-      ret = (oskStatus.keyState == OSK_PRESS)       \
-              ? tap                                 \
-              : release;                            \
-      oskStatus.keyState = OSK_NONE;                \
-    }                                               \
-    else {                                          \
-      ret = release;                                \
-    }                                               \
-    ret;                                            \
-  })
+  
+#define MACRO_PRESS_TAP(record, press, tapped, release) \
+  ( ((record)->event.pressed) \
+      ? ( press ) \
+      : ( (record)->tap.count > 0 && !(record)->tap.interrupted ) \
+        ? ( tapped ) \
+        : ( release ) )
 
 #define MACRO_SEND_NONE \
   ( send_keyboard_report(), MACRO_NONE )
 
-#define MACRO_ONESHOT_MODIFIER(mods, kc)  \
-  MACRO_ONESHOT(  ( add_macro_mods(mods), MACRO_SEND_NONE ),      \
-                  ( del_macro_mods(mods), MACRO(TYPE(kc), END) ), \
-                  ( del_macro_mods(mods), MACRO_SEND_NONE ))
+#define MACRO_HOLDMOD_TAPKC(record, mod_bits, kc) \
+  MACRO_PRESS_TAP(  record, \
+                    ( add_macro_mods(mod_bits), MACRO_SEND_NONE ), \
+                    ( del_macro_mods(mod_bits), MACRO(TYPE(kc), END) ), \
+                    ( del_macro_mods(mod_bits), MACRO_SEND_NONE ))
 
 #endif /* ACTION_MACRO_RAISUTA_H */

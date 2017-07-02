@@ -1,11 +1,11 @@
 #include "quantum.h"
 #include "action_macro.h"
+#include <stdarg.h>
 
-struct OneShotKeysStatus oskStatus;
-
+LEADER_EXTERNS();
 extern bool matrix_key_count(void);  /* matrix.c */
 static void cancel_capsLock(void);
-static void process_oneshotKey(void);
+static void act_leaderKey(void);
 
 #ifdef CONSOLE_ENABLE
 
@@ -19,9 +19,6 @@ static void process_oneshotKey(void);
   static void __print_layer_state(void);
 # define print_layer_state()  do { if (debug_enable) __print_layer_state(); } while (0)
 
-  static void __print_oneShotKeyState(void);
-# define print_oneShotKeyState() do { if (debug_enable) __print_oneShotKeyState(); } while (0)
-
   static void __print_mods(void);
 # define print_mods()         do { if (debug_enable) __print_mods(); } while (0)
 
@@ -29,7 +26,6 @@ static void process_oneshotKey(void);
 
 # define print_matrix()
 # define print_layer_state()
-# define print_oneShotKeyState()
 
 #endif  /* CONSOLE_ENABLE */
 
@@ -48,14 +44,46 @@ void matrix_scan_user(void)
     cancel_capsLock();
   }
 
-  if ( oskStatus.keyState != OSK_NONE ){
-    process_oneshotKey();
+  LEADER_DICTIONARY() {
+    act_leaderKey();
   }
 
-  print_matrix();
-  print_layer_state();
-  print_oneShotKeyState();
-  print_mods();
+  if (false) {
+    print_matrix();
+    print_layer_state();
+    print_mods();
+  }
+}
+
+enum next_key_down_up {
+    NK_DOWN_UP,
+    NK_DOWN,
+    NK_UP // a bit of a hack, this works as long as NK_UP < KC_A
+};
+
+void send_keystrokes(uint8_t key, ...)
+{
+    va_list vl;
+    va_start(vl, key);
+    enum next_key_down_up nkdu = NK_DOWN_UP;
+    while (key != KC_NO) {
+        if (key < KC_A) {
+            nkdu = key;
+        } else {
+            switch (nkdu) {
+            case NK_DOWN_UP:
+                register_code(key);
+            case NK_UP:
+                unregister_code(key);
+                break;
+            case NK_DOWN:
+                register_code(key);
+            }
+            nkdu = NK_DOWN_UP;
+        }
+        key = va_arg(vl, int);
+    }
+    va_end(vl);
 }
 
 #define TAP_ONCE(code)  do {  register_code(code);  \
@@ -96,41 +124,65 @@ static void cancel_capsLock(void)
 #endif
 }
 
-// Process OneShotKey status.
-static void process_oneshotKey(void)
+const uint16_t PROGMEM kcs[] = {KC_G, KC_A, 0};
+static const struct {
+  const uint16_t *keycodes;
+  const char strings[];
+} PROGMEM seq_strings[] = {
+  //{ (const uint16_t[]){KC_G, KC_A, 0}, "git add ." },
+  { kcs, "git add ." },
+  { (const uint16_t[]){KC_G, KC_D, 0}, "git diff" },
+  { (const uint16_t[]){KC_G, KC_D, KC_S, 0}, "git diff --staged" },
+  { (const uint16_t[]){KC_G, KC_L, 0}, "git log" },
+  { (const uint16_t[]){KC_G, KC_L, KC_O, 0}, "git log --oneline" },
+  { (const uint16_t[]){KC_G, KC_F, 0}, "git fetch" },
+  { (const uint16_t[]){KC_G, KC_O, 0}, "git checkout" },
+  { (const uint16_t[]){KC_G, KC_P, 0}, "git pull" },
+  { (const uint16_t[]){KC_G, KC_S, 0}, "git status" },
+  { (const uint16_t[]){KC_G, KC_C, KC_A, 0}, "git commit --amend" },
+};
+static const int seq_strings_num = (sizeof seq_strings)/(sizeof seq_strings[0]);
+
+static void act_leaderKey(void)
 {
-  static uint16_t lastTime;
-  static uint8_t lastKeyCount;
+  dprintf("==== act_leaderKey ====\n");
+  leading = false;
+  leader_end();
 
-  switch (oskStatus.keyState){
-    case OSK_DOWN: {
-      lastTime = timer_read();
-      lastKeyCount = matrix_key_count();
-      oskStatus.keyState = OSK_PRESS;
-    } break;
-
-    case OSK_PRESS: {
-#     if defined(ONESHOTKEY_TIMEOUT)
-      if ( timer_elapsed(lastTime) > ONESHOTKEY_TIMEOUT ){
-        oskStatus.keyState = OSK_MAINTAIN;
-        dprintf( "OneShotKey time-out\n" );
-      }
-#     endif /* ONESHOTKEY_TIMEOUT */
-
-    case OSK_MAINTAIN: ;
-      uint8_t keyCount = matrix_key_count();
-      if ( keyCount > lastKeyCount ){
-        oskStatus.keyState = OSK_NONE;
-      } else {
-        lastKeyCount = keyCount;
-      }
-    } break;
-
-    default:{
-      oskStatus.keyState = OSK_NONE;
-    } break;
+  for ( int i = 0; i < seq_strings_num; i++ ) {
+    const uint16_t *it_kc = seq_strings[i].keycodes;
+    bool is_eq;
+    int ls_cnt = 0;
+    do {
+      const uint16_t kc = pgm_read_word(it_kc);
+      //is_eq = ( leader_sequence[ls_cnt] == *it_kc );
+      is_eq = ( leader_sequence[ls_cnt] == kc );
+      dprintf( "  is_eq = %u\n"
+               "  leader_seq[%d] = %u\n"
+               "  it_kc = %u\n"
+               "  kc = %u\n"
+                  , is_eq
+                  , ls_cnt, leader_sequence[ls_cnt]
+                  , (unsigned int)it_kc
+                  , (unsigned int)kc );
+      if ( kc == 0 ){ break; }
+      ls_cnt++, it_kc++;
+    } while ( /*is_eq &&*/ ls_cnt<5 );
+    if ( !is_eq ){
+      dprintf( "  continue\n" );
+      continue;
+    }
+    else {
+      dprintf( "  send_string\n" );
+      send_string( seq_strings[i].strings );
+      return;
+    }
   }
   
+  SEQ_TWO_KEYS(KC_G, KC_C) {
+      SEND_STRING("git commit -m ''");
+      send_keystrokes(KC_LEFT, KC_NO);
+  }
 }
 
 #ifdef CONSOLE_ENABLE
@@ -155,19 +207,6 @@ static void __print_layer_state(void)
     dprintf("layer_state\n"
             "    = %032lb\n", layer_state);
     last_state = layer_state;
-  }
-}
-
-static void __print_oneShotKeyState(void)
-{
-  static enum osk_state last_state;
-
-  if (last_state != oskStatus.keyState){
-    dprintf("oskStatus\n"
-            "  .keyState = %d\n"
-            "  .lastMacroId = %d\n", 
-              oskStatus.keyState, oskStatus.lastMacroId );
-    last_state = oskStatus.keyState;
   }
 }
 

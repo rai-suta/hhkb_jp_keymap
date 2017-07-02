@@ -4,8 +4,9 @@
 #include "keyboards/hhkb/config.h"
 
 #undef  TAPPING_TERM
-#define TAPPING_TERM        ( 200 )
-#define ONESHOTKEY_TIMEOUT  ( 500 )
+#define TAPPING_TERM        ( 500 )
+#define TAPPING_FORCE_HOLD
+#define LEADER_TIMEOUT      ( 1000 )
 
 #ifdef HHKB_JP
 # define CANCEL_CAPSLOCK_KEY_POSITIONS    \
