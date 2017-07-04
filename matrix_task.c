@@ -86,15 +86,10 @@ void send_keystrokes(uint8_t key, ...)
     va_end(vl);
 }
 
-#define TAP_ONCE(code)  do {  register_code(code);  \
-                              unregister_code(code); } while(0)
-
-#ifdef JIS_KEYBOARD
-# define TAP_CAPSLOCK() do {  register_code(KC_LSFT); \
-                              TAP_ONCE(KC_CAPSLOCK);  \
-                              unregister_code(KC_LSFT); } while(0)
+#ifdef JIS_KEYCODE
+# define TAP_CAPSLOCK() send_keystrokes( NK_DOWN, KC_LSFT, KC_CAPSLOCK, NK_UP, KC_LSFT)
 #else
-# define TAP_CAPSLOCK() do {  TAP_ONCE(KC_CAPSLOCK); } while(0)
+# define TAP_CAPSLOCK() send_keystrokes( KC_CAPSLOCK )
 #endif
 
 // Turn off CapsLock when CANCEL_CAPSLOCK_KEY_POSITIONS are typed.
@@ -124,57 +119,50 @@ static void cancel_capsLock(void)
 #endif
 }
 
-const uint16_t PROGMEM kcs[] = {KC_G, KC_A, 0};
-static const struct {
-  const uint16_t *keycodes;
-  const char strings[];
-} PROGMEM seq_strings[] = {
-  //{ (const uint16_t[]){KC_G, KC_A, 0}, "git add ." },
-  { kcs, "git add ." },
-  { (const uint16_t[]){KC_G, KC_D, 0}, "git diff" },
-  { (const uint16_t[]){KC_G, KC_D, KC_S, 0}, "git diff --staged" },
-  { (const uint16_t[]){KC_G, KC_L, 0}, "git log" },
-  { (const uint16_t[]){KC_G, KC_L, KC_O, 0}, "git log --oneline" },
-  { (const uint16_t[]){KC_G, KC_F, 0}, "git fetch" },
-  { (const uint16_t[]){KC_G, KC_O, 0}, "git checkout" },
-  { (const uint16_t[]){KC_G, KC_P, 0}, "git pull" },
-  { (const uint16_t[]){KC_G, KC_S, 0}, "git status" },
-  { (const uint16_t[]){KC_G, KC_C, KC_A, 0}, "git commit --amend" },
+struct for_keySeq2String {
+  const uint16_t keyseq[5];
+  const char string[];
 };
-static const int seq_strings_num = (sizeof seq_strings)/(sizeof seq_strings[0]);
+
+#define SEQ_STRINGS( eval_kc, eval_str )  \
+  eval_kc( G,  A, NO, NO, NO) eval_str("git add .") \
+  eval_kc( G,  D, NO, NO, NO) eval_str("git diff") \
+  eval_kc( G,  D,  S, NO, NO) eval_str("git diff --staged") \
+  eval_kc( G,  L, NO, NO, NO) eval_str("git log") \
+  eval_kc( G,  L,  O, NO, NO) eval_str("git log --online") \
+  eval_kc( G,  F, NO, NO, NO) eval_str("git fetch") \
+  eval_kc( G,  O, NO, NO, NO) eval_str("git checkout") \
+  eval_kc( G,  P, NO, NO, NO) eval_str("git pull") \
+  eval_kc( G,  S, NO, NO, NO) eval_str("git status") \
+  eval_kc( G,  C,  A, NO, NO) eval_str("git commit --amend")
+#define ITEM_KS( kc1, kc2, kc3, kc4, kc5 ) \
+  const struct for_keySeq2String PROGMEM kc1##kc2##kc3##kc4##kc5 = { { KC_##kc1, KC_##kc2, KC_##kc3, KC_##kc4, KC_##kc5 }, 
+#define ITEM_STR( str ) \
+  str };
+#define ITEM_SEQ_STRINGS( kc1, kc2, kc3, kc4, kc5 ) \
+  &kc1##kc2##kc3##kc4##kc5, 
+#define NOT_EVAL(...)
+
+SEQ_STRINGS( ITEM_KS, ITEM_STR )
+static const struct for_keySeq2String * const seq_strings[] = { SEQ_STRINGS( ITEM_SEQ_STRINGS, NOT_EVAL ) };
+#define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
 
 static void act_leaderKey(void)
 {
-  dprintf("==== act_leaderKey ====\n");
   leading = false;
   leader_end();
 
-  for ( int i = 0; i < seq_strings_num; i++ ) {
-    const uint16_t *it_kc = seq_strings[i].keycodes;
-    bool is_eq;
-    int ls_cnt = 0;
-    do {
-      const uint16_t kc = pgm_read_word(it_kc);
-      //is_eq = ( leader_sequence[ls_cnt] == *it_kc );
-      is_eq = ( leader_sequence[ls_cnt] == kc );
-      dprintf( "  is_eq = %u\n"
-               "  leader_seq[%d] = %u\n"
-               "  it_kc = %u\n"
-               "  kc = %u\n"
-                  , is_eq
-                  , ls_cnt, leader_sequence[ls_cnt]
-                  , (unsigned int)it_kc
-                  , (unsigned int)kc );
-      if ( kc == 0 ){ break; }
-      ls_cnt++, it_kc++;
-    } while ( /*is_eq &&*/ ls_cnt<5 );
-    if ( !is_eq ){
-      dprintf( "  continue\n" );
-      continue;
-    }
-    else {
-      dprintf( "  send_string\n" );
-      send_string( seq_strings[i].strings );
+  for ( int i = 0; i < NUM_OF(seq_strings); i++ ) {
+    const uint16_t *it_ks = seq_strings[i]->keyseq;
+    const char *it_str = seq_strings[i]->string;
+    SEQ_FIVE_KEYS(
+      pgm_read_word(it_ks),
+      pgm_read_word(++it_ks),
+      pgm_read_word(++it_ks),
+      pgm_read_word(++it_ks),
+      pgm_read_word(++it_ks)
+    ){
+      send_string( it_str );
       return;
     }
   }
