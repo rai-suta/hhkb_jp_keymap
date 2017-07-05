@@ -9,13 +9,6 @@ static void act_leaderKey(void);
 
 #ifdef CONSOLE_ENABLE
 
-# ifdef PRINT_MATRIX_ENABLE
-    static void __print_matrix(void);
-#   define print_matrix()     do { if (debug_enable) __print_matrix(); } while (0)
-# else
-#   define print_matrix()     do { } while(0)
-# endif
-
   static void __print_layer_state(void);
 # define print_layer_state()  do { if (debug_enable) __print_layer_state(); } while (0)
 
@@ -24,8 +17,8 @@ static void act_leaderKey(void);
 
 #else   /* CONSOLE_ENABLE */
 
-# define print_matrix()
 # define print_layer_state()
+# define print_mods()
 
 #endif  /* CONSOLE_ENABLE */
 
@@ -49,7 +42,6 @@ void matrix_scan_user(void)
   }
 
   if (false) {
-    print_matrix();
     print_layer_state();
     print_mods();
   }
@@ -142,16 +134,6 @@ static void act_leaderKey(void)
 }
 
 #ifdef CONSOLE_ENABLE
-
-# ifdef PRINT_MATRIX_ENABLE
-static void __print_matrix(void)
-{
-  // error: 'matrix_is_modified' is deprecated.
-  if ( matrix_is_modified() ){
-    matrix_print();
-  }
-}
-# endif
 
 static void __print_layer_state(void)
 {
