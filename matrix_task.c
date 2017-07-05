@@ -124,31 +124,30 @@ struct for_keySeq2String {
   const char string[];
 };
 
-#define SEQ_STRINGS( eval_kc, eval_str )  \
-  eval_kc( G,  A, NO, NO, NO) eval_str("git add .") \
-  eval_kc( G,  D, NO, NO, NO) eval_str("git diff") \
-  eval_kc( G,  D,  S, NO, NO) eval_str("git diff --staged") \
-  eval_kc( G,  L, NO, NO, NO) eval_str("git log") \
-  eval_kc( G,  L,  O, NO, NO) eval_str("git log --online") \
-  eval_kc( G,  F, NO, NO, NO) eval_str("git fetch") \
-  eval_kc( G,  O, NO, NO, NO) eval_str("git checkout") \
-  eval_kc( G,  P, NO, NO, NO) eval_str("git pull") \
-  eval_kc( G,  S, NO, NO, NO) eval_str("git status") \
-  eval_kc( G,  C,  A, NO, NO) eval_str("git commit --amend")
-#define ITEM_KS( kc1, kc2, kc3, kc4, kc5 ) \
-  const struct for_keySeq2String PROGMEM kc1##kc2##kc3##kc4##kc5 = { { KC_##kc1, KC_##kc2, KC_##kc3, KC_##kc4, KC_##kc5 }, 
-#define ITEM_STR( str ) \
-  str };
-#define ITEM_SEQ_STRINGS( kc1, kc2, kc3, kc4, kc5 ) \
-  &kc1##kc2##kc3##kc4##kc5, 
-#define NOT_EVAL(...)
+#define SEQ_STR_EVAL( macro )  \
+  macro( G,  A, NO, NO, NO, "git add ."), \
+  macro( G,  D, NO, NO, NO, "git diff"), \
+  macro( G,  D,  S, NO, NO, "git diff --staged"), \
+  macro( G,  L, NO, NO, NO, "git log"), \
+  macro( G,  L,  O, NO, NO, "git log --online"), \
+  macro( G,  F, NO, NO, NO, "git fetch"), \
+  macro( G,  O, NO, NO, NO, "git checkout"), \
+  macro( G,  P, NO, NO, NO, "git pull"), \
+  macro( G,  S, NO, NO, NO, "git status"), \
+  macro( G,  C,  A, NO, NO, "git commit --amend")
+#define SEQ_STR_ITEMS( k1, k2, k3, k4, k5, str ) \
+  k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
+#define SEQ_STR_PITEMS( k1, k2, k3, k4, k5, str ) \
+  &k1##k2##k3##k4##k5
 
-SEQ_STRINGS( ITEM_KS, ITEM_STR )
-static const struct for_keySeq2String * const seq_strings[] = { SEQ_STRINGS( ITEM_SEQ_STRINGS, NOT_EVAL ) };
 #define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
 
 static void act_leaderKey(void)
 {
+  static const struct for_keySeq2String 
+    SEQ_STR_EVAL( SEQ_STR_ITEMS ),
+    * const seq_strings[] = { SEQ_STR_EVAL( SEQ_STR_PITEMS ) };
+
   leading = false;
   leader_end();
 
