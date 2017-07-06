@@ -41,7 +41,7 @@ void matrix_scan_user(void)
     act_leaderKey();
   }
 
-  if (false) {
+  if (true) {
     print_layer_state();
     print_mods();
   }
@@ -141,9 +141,10 @@ static void __print_layer_state(void)
 
   if ( last_state != layer_state ){
     dprintf("default_layer_state\n"
-            "    = %032lb\n", default_layer_state);
-    dprintf("layer_state\n"
-            "    = %032lb\n", layer_state);
+            "  = %032lb\n"
+            "layer_state\n"
+            "  = %032lb\n"
+            , default_layer_state, layer_state);
     last_state = layer_state;
   }
 }
@@ -163,10 +164,11 @@ static void __print_mods(void)
 
   if ( !EQ_MODS(last_mods, mods) ){
     dprintf("mods\n"
-            "    .real  = %08b\n"
-            "    .weak  = %08b\n"
-            "    .macro = %08b\n" 
-            "    .oneshot = %08b\n", mods.real, mods.weak, mods.macro, mods.oneshot );
+            "  .r. = %08b\n"
+            "  .w. = %08b\n"
+            "  .m. = %08b\n" 
+            "  .o. = %08b\n"
+            , mods.real, mods.weak, mods.macro, mods.oneshot );
     last_mods = mods;
   }
 }
