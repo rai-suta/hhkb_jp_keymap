@@ -62,25 +62,24 @@ enum user_macro{
 static const macro_t* getMacro_pairedBrankets( keyrecord_t *record );
 static void action_displaySettings( void );
 
-#define LAYER_NAMES( macro )  \
-          macro(PLN_QWERTY) \
-          macro(PLN_DVORAK) \
-          macro(MOD_FN)     \
-          macro(MOD_RSIDE)  \
-          macro(MOD_SANDS)  \
-          macro(EDIT_CRSR)  \
-          macro(EDIT_SLCT)  \
-          macro(EDIT_SCRL)  \
-          macro(EDIT_MEDIA) \
-          macro(INPUT)      \
-          macro(STNG)
+#define LAYER_NAMES_EVAL( macro ) \
+  macro(PLN_QWERTY), \
+  macro(PLN_DVORAK), \
+  macro(MOD_FN),     \
+  macro(MOD_RSIDE),  \
+  macro(MOD_SANDS),  \
+  macro(EDIT_CRSR),  \
+  macro(EDIT_SLCT),  \
+  macro(EDIT_SCRL),  \
+  macro(EDIT_MEDIA), \
+  macro(INPUT),      \
+  macro(STNG)
 
 // keymap layer specifier
 //    keymaps[...]
 #define KL_( name )     KL_##name
-#define KL_COM( name )  KL_(name), 
 enum keymap_layer{
-  LAYER_NAMES( KL_COM )
+  LAYER_NAMES_EVAL( KL_ ),
   KL_NUM
 };
 #define LAYER_MASK_OF_EDIT          ( 1UL << KL_(EDIT_CRSR)   \
@@ -92,9 +91,12 @@ enum keymap_layer{
 static void toggle_default_layer( enum keymap_layer layer );
 
 // keymap layer name strings
-#define STR_( name )    STR_##name
-#define STR_VAR( name ) static const char STR_(name)[] PROGMEM = #name;
-LAYER_NAMES( STR_VAR );
+#define STR_( name )      STR_##name
+#define STR_DEFINE( name )  STR_(name)[] PROGMEM = #name
+#define LAYER_NAMES_LUT_ITEM( name )  [KL_(name)] = STR_(name)
+static const char 
+  LAYER_NAMES_EVAL( STR_DEFINE ),
+  * const layer_names_lut[] = { LAYER_NAMES_EVAL( LAYER_NAMES_LUT_ITEM ) };
 
 struct for_mods {
   uint8_t real, weak, macro, oneshot;
@@ -242,16 +244,18 @@ static const uint8_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
-  dprintf( "====action_get_macro====\n" );
-  dprintf( "record.\n"
-           "  event.pressed = %u\n"
-           "  tap.count = %u\n"
-           "  tap.interrupted = %u\n",
-              record->event.pressed,
-              record->tap.count,
-              record->tap.interrupted );
-  dprintf( "macro_id = %u\n", macro_id );
-  dprintf( "opt = %u\n\n", opt );
+  dprintf( "====action_get_macro====\n"
+           "record.\n"
+           "  e.p. = %u\n"
+           "  t.c. = %u\n"
+           "  t.i. = %u\n"
+           "macro_id = %u\n"
+           "opt = %u\n"
+           , record->event.pressed
+           , record->tap.count
+           , record->tap.interrupted
+           , macro_id
+           , opt );
 
   switch (macro_id) {
     case UM_DELETE_FORWARD_WORD: {
@@ -274,10 +278,10 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 
     case UM_SWITCH_EDIT_LAYER: {
       return MACRO_TAP_HOLD( record,
-                /*press*/     ( layer_on(KL_(EDIT_CRSR)),         MACRO_NONE ),
+                /*press*/     ( layer_on(KL_(EDIT_CRSR)),       MACRO_NONE ),
                 /*release*/   ( clearAllMods(), 
                                 layer_and(~LAYER_MASK_OF_EDIT), MACRO_SEND_NONE ),
-                /*tap_macro*/ ( clearAllMods(), 
+                /*tap*/       ( clearAllMods(), 
                                 layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ));
     } break;
 
@@ -286,7 +290,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
                 /*press*/     ( layer_on(KL_(INPUT)),            MACRO_NONE ),
                 /*release*/   ( clearAllMods(), 
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
-                /*tap_macro*/ ( clearAllMods(), 
+                /*tap*/       ( clearAllMods(), 
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SECO), END) ));
     } break;
 
@@ -476,25 +480,19 @@ getMacro_pairedBrankets( keyrecord_t *record )
 static void 
 action_displaySettings( void )
 {
-# define LAYER_KL_NAME( name )   [KL_(name)] = STR_(name),
-  static const char* layer_names[] = {
-    LAYER_NAMES( LAYER_KL_NAME )
-  };
-
   // display default_layer_state
   uint32_t state = default_layer_state;
-  SEND_STRING( "default_layer_state: " );
-  default_layer_debug(); SEND_STRING( "\n" );
+  SEND_STRING( "default_layer_state:\n" );
   if ( state == 0 ){
     SEND_STRING( "  fall back to " );
-    send_string( layer_names[0] );
+    send_string( layer_names_lut[0] );
     SEND_STRING( "\n" );
   }
   else {
     for ( int i = 0; i < KL_NUM; i++ ){
       if ( state & (1U<<i) ){
         SEND_STRING( "  " );
-        send_string( layer_names[i] );
+        send_string( layer_names_lut[i] );
         SEND_STRING( " = active\n" );
       }
     }
