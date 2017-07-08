@@ -33,8 +33,25 @@ void matrix_scan_user(void)
 {
   uint8_t keyboardLeds = host_keyboard_leds();
 
-  if ( keyboardLeds & (1<<USB_LED_CAPS_LOCK) ){
+  static uint8_t mem_keyboardLeds;
+  if ( mem_keyboardLeds != keyboardLeds ){
+    dprintf( "keyboardLeds = %08b\n", keyboardLeds );
+    mem_keyboardLeds = keyboardLeds;
+  }
+
+  if ( keyboardLeds & (1u << USB_LED_CAPS_LOCK) ){
     cancel_capsLock();
+  }
+
+  static bool led_kana = false;
+  if ( keyboardLeds & (1u << USB_LED_KANA) ){
+    if ( !led_kana ) {
+      dprintf( "USB_LED_KANA ON\n" );
+    }
+    led_kana = true;
+  }
+  else {
+    led_kana = false;
   }
 
   LEADER_DICTIONARY() {
@@ -85,17 +102,18 @@ struct for_keySeq2String {
   const char string[];
 };
 
+#define KC___   KC_NO
 #define SEQ_STR_EVAL( macro )  \
-  macro( G,  A, NO, NO, NO, "git add ."), \
-  macro( G,  D, NO, NO, NO, "git diff"), \
-  macro( G,  D,  S, NO, NO, "git diff --staged"), \
-  macro( G,  L, NO, NO, NO, "git log"), \
-  macro( G,  L,  O, NO, NO, "git log --online"), \
-  macro( G,  F, NO, NO, NO, "git fetch"), \
-  macro( G,  O, NO, NO, NO, "git checkout"), \
-  macro( G,  P, NO, NO, NO, "git pull"), \
-  macro( G,  S, NO, NO, NO, "git status"), \
-  macro( G,  C,  A, NO, NO, "git commit --amend")
+  macro( G,  A, __, __, __, "git add ."), \
+  macro( G,  D, __, __, __, "git diff"), \
+  macro( G,  D,  S, __, __, "git diff --staged"), \
+  macro( G,  L, __, __, __, "git log"), \
+  macro( G,  L,  O, __, __, "git log --online"), \
+  macro( G,  F, __, __, __, "git fetch"), \
+  macro( G,  O, __, __, __, "git checkout"), \
+  macro( G,  P, __, __, __, "git pull"), \
+  macro( G,  S, __, __, __, "git status"), \
+  macro( G,  C,  A, __, __, "git commit --amend")
 #define SEQ_STR_ITEMS( k1, k2, k3, k4, k5, str ) \
   k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
 #define SEQ_STR_PITEMS( k1, k2, k3, k4, k5, str ) \
