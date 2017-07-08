@@ -59,7 +59,6 @@ enum user_macro{
   UM_0_A,
 };
 #define UM( id )  ( M(UM_##id) )
-static const macro_t* getMacro_pairedBrankets( keyrecord_t *record );
 static void action_displaySettings( void );
 
 #define LAYER_NAMES_EVAL( macro ) \
@@ -238,8 +237,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 const uint16_t PROGMEM fn_actions[] = {
 };
 
+struct for_agm_status {
+    keyrecord_t *record;
+    uint8_t macro_id;
+    uint8_t opt;
+    struct for_mods mods;
+};
+typedef const struct for_agm_status AGM_STATUS_T;
 static const uint8_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 #define IF_PRESSED  if ( record->event.pressed )
+
+static const macro_t* getMacro_pairedBrankets( AGM_STATUS_T* const status );
 
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
@@ -256,6 +264,13 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
            , record->tap.interrupted
            , macro_id
            , opt );
+
+  AGM_STATUS_T agm_status = {
+    .record = record,
+    .macro_id = macro_id,
+    .opt = opt,
+    .mods = storeMods(),
+  };
 
   switch (macro_id) {
     case UM_DELETE_FORWARD_WORD: {
@@ -320,7 +335,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     } break;
 
     case UM_PAIRED_BRANKETS: {
-      return getMacro_pairedBrankets( record );
+      return getMacro_pairedBrankets( &agm_status );
     } break;
 
     case UM_TOGGLE_PLN_DVORAK: IF_PRESSED {
@@ -368,10 +383,13 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 }
 
 static const macro_t* 
-getMacro_pairedBrankets( keyrecord_t *record )
+getMacro_pairedBrankets( AGM_STATUS_T* const status )
 {
+  keyrecord_t * const record = status->record;
+  const keypos_t key = status->record->event.key;
+  const bool pressed = status->record->event.pressed;
+
   // Get keycode at default-layer.
-  keypos_t key = record->event.key;
   uint32_t layer_state_mem = layer_state;
   layer_state = 0;
   uint16_t keycode = keymap_key_to_keycode( layer_switch_get_layer(key), key );
@@ -379,16 +397,17 @@ getMacro_pairedBrankets( keyrecord_t *record )
 
   // Evacuation and restoration mods.
   static struct for_mods mods;
-  if ( record->event.pressed ){
-    mods = storeMods();
+  if ( pressed ){
+    mods = status->mods;
     clearAllMods();
   } 
   else {
     restoreMods( mods );
   }
   send_keyboard_report();
-  bool isShifted = anyMods( mods ) & SHIFT_MASK;
-  
+
+  // Select macro sequence.
+  bool isShifted = anyMods( status->mods ) & SHIFT_MASK;
   switch ( keycode ){
 #   ifdef KC_LBRACKET_KL
     case KC_LBRACKET_KL: {
@@ -465,7 +484,7 @@ getMacro_pairedBrankets( keyrecord_t *record )
 #   endif
 
     default: {
-      if ( record->event.pressed ){
+      if ( pressed ){
         register_code( keycode );
       }
       else {
