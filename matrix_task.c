@@ -77,10 +77,12 @@ static void cancel_capsLock(void)
   static keypos_t const keypos_toCancelCapslock[] = CANCEL_CAPSLOCK_KEY_POSITIONS;
   static size_t const ktcc_length = sizeof( keypos_toCancelCapslock ) / sizeof( keypos_t );
 
-  if ( layer_state != default_layer_state ){
+  // if layer_state is switching then, process break.
+  if ( layer_state > default_layer_state ){
     return;
   }
   
+  // if shift-key being pressed then, process break.
   bool isShiftOn = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
   if ( isShiftOn ){
     return;
