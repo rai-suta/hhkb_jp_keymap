@@ -2,9 +2,6 @@
 #include "config.h"
 #include "action_macro.h"
 
-// Keycodes definition
-#define _______                 ( KC_TRNS )
-#define xxxxxxx                 ( KC_NO )
 #ifdef JIS_KEYCODE
   // JIS keyboard layout
 # define KC_LBRACKET_KL         ( KC_RBRACKET )
@@ -226,11 +223,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_TMS    ( M(UM_TOGGLE_MOD_SANDS) )
 # define M_DSST   ( M(UM_DISPLAY_SETTINGS) )
   [KL_(STNG)] = KEYMAP_JP(
-    xxxxxxx,   M_TPD, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx,
-    xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx,
-    xxxxxxx, xxxxxxx, xxxxxxx,  M_DSST, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx,
-    xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx,   M_TMA, xxxxxxx,
-    xxxxxxx, xxxxxxx, xxxxxxx, xxxxxxx, MO_STNG,       M_TMS     , MO_STNG, xxxxxxx, xxxxxxx, xxxxxxx,   M_TMA,   M_TMA,   M_TMA 
+    XXXXXXX,   M_TPD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX,  M_DSST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, MO_STNG,       M_TMS     , MO_STNG, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA,   M_TMA,   M_TMA 
   ),
 };
 
