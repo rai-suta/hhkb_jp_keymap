@@ -1,5 +1,6 @@
 #include "quantum.h"
 #include "action_macro.h"
+#include "sendstring_jis.h"
 #include <stdarg.h>
 
 LEADER_EXTERNS();
@@ -54,7 +55,10 @@ void matrix_scan_user(void)
     led_kana = false;
   }
 
+  // when timeout from typing of KC_LEAD
   LEADER_DICTIONARY() {
+    leading = false;
+    leader_end();
     act_leaderKey();
   }
 
@@ -115,10 +119,11 @@ struct for_keySeq2String {
   macro( G,  O, __, __, __, "git checkout"), \
   macro( G,  P, __, __, __, "git pull"), \
   macro( G,  S, __, __, __, "git status"), \
-  macro( G,  C,  A, __, __, "git commit --amend")
+  macro( G,  C,  A, __, __, "git commit --amend"), \
+  macro( G,  C, __, __, __, "git commit -m ''")
 #define SEQ_STR_ITEMS( k1, k2, k3, k4, k5, str ) \
   k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
-#define SEQ_STR_PITEMS( k1, k2, k3, k4, k5, str ) \
+#define SEQ_STR_PITEMS( k1, k2, k3, k4, k5, ... ) \
   &k1##k2##k3##k4##k5
 
 #define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
@@ -128,9 +133,6 @@ static void act_leaderKey(void)
   static const struct for_keySeq2String 
     SEQ_STR_EVAL( SEQ_STR_ITEMS ),
     * const seq_strings[] = { SEQ_STR_EVAL( SEQ_STR_PITEMS ) };
-
-  leading = false;
-  leader_end();
 
   for ( int i = 0; i < NUM_OF(seq_strings); i++ ) {
     const uint16_t *it_ks = seq_strings[i]->keyseq;
@@ -142,7 +144,14 @@ static void act_leaderKey(void)
       pgm_read_word(++it_ks),
       pgm_read_word(++it_ks)
     ){
-      send_string( it_str );
+      if ( seq_strings[i] == SEQ_STR_PITEMS(G, C, __ ,__ ,__) ) {
+        send_string( it_str );
+        action_macro_play( MACRO( T(LEFT), END ));
+      } 
+      else {
+        send_string( it_str );
+      }
+
       return;
     }
   }
