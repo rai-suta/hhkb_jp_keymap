@@ -501,14 +501,14 @@ action_displaySettings( void )
   SEND_STRING( "default_layer_state:\n" );
   if ( state == 0 ){
     SEND_STRING( "  fall back to " );
-    send_string( layer_names_lut[0] );
+    send_string_P( layer_names_lut[0] );
     SEND_STRING( "\n" );
   }
   else {
     for ( int i = 0; i < KL_NUM; i++ ){
       if ( state & (1U<<i) ){
         SEND_STRING( "  " );
-        send_string( layer_names_lut[i] );
+        send_string_P( layer_names_lut[i] );
         SEND_STRING( " = active\n" );
       }
     }

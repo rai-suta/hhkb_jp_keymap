@@ -145,11 +145,11 @@ static void act_leaderKey(void)
       pgm_read_word(++it_ks)
     ){
       if ( seq_strings[i] == SEQ_STR_PITEMS(G, C, __ ,__ ,__) ) {
-        send_string( it_str );
+        send_string_P( it_str );
         action_macro_play( MACRO( T(LEFT), END ));
       } 
       else {
-        send_string( it_str );
+        send_string_P( it_str );
       }
 
       return;
