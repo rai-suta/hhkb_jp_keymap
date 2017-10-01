@@ -59,6 +59,7 @@ enum user_macro{
 #define UM( id )  ( M(UM_##id) )
 static void action_displaySettings( void );
 
+// keymap layer names
 #define LAYER_NAMES_EVAL( macro ) \
   macro(PLN_QWERTY), \
   macro(PLN_DVORAK), \
@@ -92,8 +93,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 # define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER) )
 # define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER) )
-# define KC_SECO  ( KC_MHEN )
-# define KC_SINO  ( KC_HENK )
+# define KC_SECO  ( KC_MHEN )   // input key when UM_SWITCH_EDIT_LAYER is tapped
+# define KC_SINO  ( KC_HENK )   // input key when UM_SWITCH_INPUT_LAYER is tapped
 # define MO_MF    ( MO(KL_MOD_FN) )
   [KL_(PLN_QWERTY)] = KEYMAP_JP(
      KC_ESC,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_MINS,  KC_EQL, KC_JYEN, KC_BSPC,
@@ -312,7 +313,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
                 /*release*/   ( clearAllMods(), 
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
                 /*tap*/       ( clearAllMods(), 
-                                layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SECO), END) ));
+                                layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ));
     } break;
 
     case UM_TURN_EDIT_LAYER: if_pressed {
