@@ -1,6 +1,7 @@
 #include "hhkb.h"
 #include "config.h"
 #include "action_macro.h"
+#include "sendstring_jis.h"
 
 // Key position per keyboard layout
 #ifdef JIS_KEYCODE
@@ -35,6 +36,7 @@ enum user_macro{
   UM_SANDS,
   UM_SWITCH_EDIT_LAYER,
   UM_SWITCH_INPUT_LAYER,
+  UM_SWITCH_STNG_LAYER,
   UM_TURN_EDIT_LAYER,
   UM_TURN_INPUT_LAYER,
   UM_DELETE_FORWARD_WORD,
@@ -57,6 +59,8 @@ enum user_macro{
   UM_0_A,
 };
 #define UM( id )  ( M(UM_##id) )
+#define KC_SECO  ( KC_MHEN )    // input key when UM_SWITCH_EDIT_LAYER is tapped
+#define KC_SINO  ( KC_HENK )    // input key when UM_SWITCH_INPUT_LAYER is tapped
 static void action_displaySettings( void );
 
 // keymap layer names
@@ -93,8 +97,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 # define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER) )
 # define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER) )
-# define KC_SECO  ( KC_MHEN )   // input key when UM_SWITCH_EDIT_LAYER is tapped
-# define KC_SINO  ( KC_HENK )   // input key when UM_SWITCH_INPUT_LAYER is tapped
 # define MO_MF    ( MO(KL_MOD_FN) )
   [KL_(PLN_QWERTY)] = KEYMAP_JP(
      KC_ESC,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_MINS,  KC_EQL, KC_JYEN, KC_BSPC,
@@ -150,8 +152,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_DFW    ( M(UM_DELETE_FORWARD_WORD) )
 # define M_DBW    ( M(UM_DELETE_BACKWARD_WORD) )
 # define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
+# define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
 # define MO_EDSL  ( MO(KL_(EDIT_SLCT)) )   // NOTE: MO() can switch in the shortest time
-# define MO_STNG  ( MO(KL_(STNG)) )
 # define OSM_CTL  ( OSM(MOD_LCTL) )
 # define OSM_ALT  ( OSM(MOD_LALT) )
 # define OSM_SFT  ( OSM(MOD_LSFT) )
@@ -161,7 +163,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     XXXXXXX,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX, KC_REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
     OSM_SFT, KC_UNDO,  KC_CUT, KC_COPY,  KC_PST, XXXXXXX, XXXXXXX,  KC_ENT,   M_DBW,   M_DFW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
-    _______, _______, OSM_GUI, OSM_ALT, _______,     _______     , MO_STNG,  KC_APP, OSM_ALT, _______,   KC_NO, OSM_GUI, OSM_CTL 
+    _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL,  KC_APP, OSM_ALT, _______,   KC_NO, OSM_GUI, OSM_CTL 
   ),
 
 # define S_TOP    ( S(LCTL(KC_HOME)) )
@@ -213,7 +215,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, KC_LEAD, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
     _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A),    M_PB, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______,    M_PB, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, MO_STNG,     _______     , _______, _______, _______, _______, _______, _______, _______ 
+    _______, _______, _______, _______,   M_SSL,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
 
 # define M_TPD    ( M(UM_TOGGLE_PLN_DVORAK) )
@@ -225,7 +227,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX,  M_DSST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, MO_STNG,       M_TMS     , MO_STNG, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA,   M_TMA,   M_TMA 
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_SSL,       M_TMS     ,   M_SSL, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA,   M_TMA,   M_TMA 
   ),
 
 };
@@ -314,6 +316,16 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
                 /*tap*/       ( clearAllMods(), 
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ));
+    } break;
+
+    case UM_SWITCH_STNG_LAYER: {
+      clearAllMods();
+      if ( layer_state & (1UL << KL_(STNG)) ){
+        layer_off( KL_(STNG) );
+      }
+      else {
+        layer_move( KL_(STNG) );
+      }
     } break;
 
     case UM_TURN_EDIT_LAYER: if_pressed {

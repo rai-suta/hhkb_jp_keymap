@@ -1,6 +1,5 @@
 #include "quantum.h"
 #include "action_macro.h"
-#include "sendstring_jis.h"
 #include <stdarg.h>
 
 LEADER_EXTERNS();
