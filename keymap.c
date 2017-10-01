@@ -2,25 +2,26 @@
 #include "config.h"
 #include "action_macro.h"
 
+// Key position per keyboard layout
 #ifdef JIS_KEYCODE
   // JIS keyboard layout
-# define KC_LBRACKET_KL         ( KC_RBRACKET )
-# define KC_RBRACKET_KL         ( KC_BSLASH )
-# define KC__LR_BRACKET_KL      ( KC_8 )
-# define KC__RR_BRACKET_KL      ( KC_9 )
-# define KC__LA_BRANKETS_KL     ( KC_COMMA )
-# define KC__RA_BRANKETS_KL     ( KC_DOT )
-# define KC__SGLQUOTE_KL        ( KC_7 )
-# define KC__DBLQUOTE_KL        ( KC_2 )
+# define KP_LBRACKET            ( KC_RBRACKET ) // [
+# define KP_RBRACKET            ( KC_BSLASH )   // ]
+# define KP__LR_BRACKET         ( KC_8 )        // unshifted (
+# define KP__RR_BRACKET         ( KC_9 )        // unshifted )
+# define KP__LA_BRANKETS        ( KC_COMMA )    // unshifted <
+# define KP__RA_BRANKETS        ( KC_DOT )      // unshifted >
+# define KP__SGLQUOTE           ( KC_7 )        // unshifted '
+# define KP__DBLQUOTE           ( KC_2 )        // unshifted "
 #else
   // ISO keyboard layout
-# define KC_LBRACKET_KL         ( KC_LBRACKET )
-# define KC_RBRACKET_KL         ( KC_RBRACKET )
-# define KC__LR_BRACKET_KL      ( KC_9 )
-# define KC__RR_BRACKET_KL      ( KC_0 )
-# define KC__LA_BRANKETS_KL     ( KC_COMMA )
-# define KC__RA_BRANKETS_KL     ( KC_DOT )
-# define KC_SGLQUOTE_KL         ( KC_QUOT )
+# define KP_LBRACKET            ( KC_LBRACKET )
+# define KP_RBRACKET            ( KC_RBRACKET )
+# define KP__LR_BRACKET         ( KC_9 )
+# define KP__RR_BRACKET         ( KC_0 )
+# define KP__LA_BRANKETS        ( KC_COMMA )
+# define KP__RA_BRANKETS        ( KC_DOT )
+# define KP_SGLQUOTE            ( KC_QUOT )
 #endif
 
 // Fn keys definition.
@@ -414,75 +415,73 @@ getMacro_pairedBrankets( AGM_STATUS_T* const status )
   // Select macro sequence.
   bool isShifted = anyMods( status->mods ) & SHIFT_MASK;
   switch ( keycode ){
-#   ifdef KC_LBRACKET_KL
-    case KC_LBRACKET_KL: {
+#   ifdef KP_LBRACKET
+    case KP_LBRACKET: {
       if ( isShifted ){
         return MACRODOWN( D(LSFT),
-                            T(LBRACKET_KL),
-                            T(RBRACKET_KL),
+                            TYPE(KP_LBRACKET),
+                            TYPE(KP_LBRACKET),
                             U(LSFT),
                           T(LEFT), END );
       }
       else {
-        return MACRODOWN( T(LBRACKET_KL),
-                          T(RBRACKET_KL),
+        return MACRODOWN( TYPE(KP_LBRACKET),
+                          TYPE(KP_LBRACKET),
                           T(LEFT), END );
       }
     } break;
 #   endif
 
-#   ifdef KC__LR_BRACKET_KL
-    case KC__LR_BRACKET_KL: {
+#   ifdef KP__LR_BRACKET
+    case KP__LR_BRACKET: {
       return MACRODOWN( D(LSFT),
-                          T(_LR_BRACKET_KL),
-                          T(_RR_BRACKET_KL),
+                          TYPE(KP__LR_BRACKET),
+                          TYPE(KP__LR_BRACKET),
                           U(LSFT),
                         T(LEFT), END );
     } break;
 #   endif
 
-#   ifdef KC__LA_BRANKETS_KL
-    case KC__LA_BRANKETS_KL: {
+#   ifdef KP__LA_BRANKETS
+    case KP__LA_BRANKETS: {
       return MACRODOWN( D(LSFT),
-                          T(_LA_BRANKETS_KL),
-                          T(_RA_BRANKETS_KL),
+                          TYPE(KP__LA_BRANKETS),
+                          TYPE(KP__LA_BRANKETS),
                           U(LSFT),
                         T(LEFT), END );
     } break;
 #   endif
 
-#   ifdef KC_SGLQUOTE_KL
-    case KC_SGLQUOTE_KL: {
+#   ifdef KP__SGLQUOTE
+    case KP__SGLQUOTE: {
       if ( isShifted ){
         return MACRODOWN( D(LSFT),
-                            T(SGLQUOTE_KL),
-                            T(SGLQUOTE_KL),
+                            TYPE(KP__SGLQUOTE),
+                            TYPE(KP__SGLQUOTE),
                             U(LSFT),
                           T(LEFT), END );
       }
       else {
-        return MACRODOWN( T(SGLQUOTE_KL),
-                          T(SGLQUOTE_KL),
+        return MACRODOWN( TYPE(KP__SGLQUOTE),
+                          TYPE(KP__SGLQUOTE),
                           T(LEFT), END );
       }
     } break;
 #   endif
 
-#   ifdef KC__SGLQUOTE_KL
-    case KC__SGLQUOTE_KL: {
-      return MACRODOWN( D(LSFT),
-                          T(_SGLQUOTE_KL),
-                          T(_SGLQUOTE_KL),
-                          U(LSFT),
+#   ifdef KP_SGLQUOTE
+    case KP_SGLQUOTE: {
+      return MACRODOWN( TYPE(KP_SGLQUOTE),
+                        TYPE(KP_SGLQUOTE),
                         T(LEFT), END );
     } break;
 #   endif
 
-#   ifdef KC__DBLQUOTE_KL
-    case KC__DBLQUOTE_KL: {
+#   ifdef KP__DBLQUOTE
+    case KP__DBLQUOTE: {
       return MACRODOWN( D(LSFT),
-                          T(_DBLQUOTE_KL),
-                          T(_DBLQUOTE_KL),
+                          TYPE(KP__DBLQUOTE),
+                          TYPE(KP__DBLQUOTE),
                           U(LSFT),
                         T(LEFT), END );
     } break;
