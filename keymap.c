@@ -85,24 +85,10 @@ enum keymap_layer{
 #define LAYER_MASK_OF_INPUT         ( 1UL << KL_(INPUT) )
 #define LAYER_MASK_OF_STNG          ( 1UL << KL_(STNG) )
 static void toggle_default_layer( enum keymap_layer layer );
-
-// keymap layer name strings
-#define STR_( name )      STR_##name
-#define STR_DEFINE( name )  STR_(name)[] PROGMEM = #name
-#define LAYER_NAMES_LUT_ITEM( name )  [KL_(name)] = STR_(name)
-static const char 
-  LAYER_NAMES_EVAL( STR_DEFINE ),
-  * const layer_names_lut[] = { LAYER_NAMES_EVAL( LAYER_NAMES_LUT_ITEM ) };
-
-struct for_mods {
-  uint8_t real, weak, macro, oneshot;
-};
-static struct for_mods storeMods( void );
-static void restoreMods( struct for_mods mods );
-static uint8_t anyMods( struct for_mods mods );
-static void clearAllMods( void );
+static const char* layerNameStr_P( enum keymap_layer layer );
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+
 # define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER) )
 # define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER) )
 # define KC_SECO  ( KC_MHEN )
@@ -115,6 +101,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_LSFT,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,  KC_COMM,  KC_DOT, KC_SLSH,   KC_RO,   KC_UP, KC_RSFT,
       MO_MF, KC_ZKHK, KC_LGUI, KC_LALT,  M_MHEN,      KC_SPC     ,  M_HENK,  KC_KANA, KC_RALT,   MO_MF, KC_LEFT, KC_DOWN, KC_RGHT 
   ),
+  
   [KL_(PLN_DVORAK)] = KEYMAP_JP(
     _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_LBRC, KC_RBRC,  KC_GRV, _______,
     _______, KC_QUOT, KC_COMM,  KC_DOT,    KC_P,    KC_Y,    KC_F,    KC_G,     KC_C,    KC_R,    KC_L, KC_SLSH,  KC_EQL,
@@ -122,6 +109,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, KC_SCLN,    KC_Q,    KC_J,    KC_K,    KC_X,    KC_B,    KC_M,     KC_W,    KC_V,    KC_Z, KC_JYEN, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______,  _______, _______, _______, _______, _______, _______ 
   ),
+
   [KL_(MOD_FN)] = KEYMAP_JP(
     KC_SLEP,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,  KC_INS,  KC_DEL,
     KC_CAPS, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SLCK, KC_PAUS,   KC_UP, _______,
@@ -129,6 +117,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, _______, KC_RSFT, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL 
   ),
+
   [KL_(MOD_RSIDE)] = KEYMAP_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -136,6 +125,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_RSFT, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL 
   ),
+
 //# define M_SAS   ( MACROTAP(UM_SANDS) )
 # define M_SAS    ( MT(MOD_LSFT, KC_SPACE) )
   [KL_(MOD_SANDS)] = KEYMAP_JP(
@@ -145,6 +135,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______,       M_SAS     , _______, _______, _______, _______, _______, _______, _______ 
   ),
+
 # define KC_TOP   ( LCTL(KC_HOME) )   // move to top
 # define KC_BTTM  ( LCTL(KC_END) )    // move to bottom
 # define KC_MBW   ( LCTL(KC_LEFT) )   // move to backward-word
@@ -164,12 +155,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define OSM_SFT  ( OSM(MOD_LSFT) )
 # define OSM_GUI  ( OSM(MOD_LGUI) )
   [KL_(EDIT_CRSR)] = KEYMAP_JP(
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, _______, KC_REDO, MO_EDSL, KC_HOME,  KC_END, _______, _______, _______,
-    OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, _______, _______, _______,
-    OSM_SFT, KC_UNDO,  KC_CUT, KC_COPY,  KC_PST, _______, _______,  KC_ENT,   M_DBW,   M_DFW, _______, _______, OSM_SFT, OSM_SFT,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX, KC_REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
+    OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
+    OSM_SFT, KC_UNDO,  KC_CUT, KC_COPY,  KC_PST, XXXXXXX, XXXXXXX,  KC_ENT,   M_DBW,   M_DFW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
     _______, _______, OSM_GUI, OSM_ALT, _______,     _______     , MO_STNG,  KC_APP, OSM_ALT, _______,   KC_NO, OSM_GUI, OSM_CTL 
   ),
+
 # define S_TOP    ( S(LCTL(KC_HOME)) )
 # define S_BTTM   ( S(LCTL(KC_END)) )
 # define S_PGUP   ( S(KC_PGUP) )
@@ -190,6 +182,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
+
 # define KC_PRVS  ( LALT(KC_LEFT) )   // previous location
 # define KC_NEXT  ( LALT(KC_RIGHT) )  // next location
 # define KC_SLU   ( LCTL(KC_UP) )     // scroll line up
@@ -203,6 +196,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
+
   [KL_(EDIT_MEDIA)] = KEYMAP_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, KC_MPRV, KC_MNXT, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -210,6 +204,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
+
 # define M_PB     ( M(UM_PAIRED_BRANKETS) )
   [KL_(INPUT)] = KEYMAP_JP(
     _______, _______,    M_PB, _______, _______, _______, _______,    M_PB,    M_PB,    M_PB, _______, _______, _______, _______, _______,
@@ -218,6 +213,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______,    M_PB, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, MO_STNG,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
+
 # define M_TPD    ( M(UM_TOGGLE_PLN_DVORAK) )
 # define M_TMA    ( M(UM_TOGGLE_MOD_ARROW) )
 # define M_TMS    ( M(UM_TOGGLE_MOD_SANDS) )
@@ -229,11 +225,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, MO_STNG,       M_TMS     , MO_STNG, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA,   M_TMA,   M_TMA 
   ),
+
 };
 
 const uint16_t PROGMEM fn_actions[] = {
 };
 
+// Modifier utility
+typedef uint8_t mod_bits_t;
+static const mod_bits_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
+struct for_mods {
+  mod_bits_t real, weak, macro, oneshot;
+};
+static struct for_mods storeMods( void );
+static void restoreMods( struct for_mods mods );
+static mod_bits_t anyMods( struct for_mods mods );
+static void clearAllMods( void );
+
+// action_get_macro status of parameter
 struct for_agm_status {
     keyrecord_t *record;
     uint8_t macro_id;
@@ -241,9 +250,8 @@ struct for_agm_status {
     struct for_mods mods;
 };
 typedef const struct for_agm_status AGM_STATUS_T;
-static const uint8_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
-#define IF_PRESSED  if ( record->event.pressed )
 
+#define if_pressed  if ( record->event.pressed )
 static const macro_t* getMacro_pairedBrankets( AGM_STATUS_T* const status );
 
 const macro_t*
@@ -306,7 +314,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SECO), END) ));
     } break;
 
-    case UM_TURN_EDIT_LAYER: IF_PRESSED {
+    case UM_TURN_EDIT_LAYER: if_pressed {
       uint32_t state = layer_state & LAYER_MASK_OF_EDIT;
       enum keymap_layer kl;
       for ( kl = KL_NUM-1; kl > 0; kl-- ){
@@ -335,28 +343,28 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       return getMacro_pairedBrankets( &agm_status );
     } break;
 
-    case UM_TOGGLE_PLN_DVORAK: IF_PRESSED {
+    case UM_TOGGLE_PLN_DVORAK: if_pressed {
       toggle_default_layer( KL_(PLN_DVORAK) );
       //eeconfig_update_default_layer( default_layer_state );
     } break;
 
-    case UM_TOGGLE_MOD_SANDS: IF_PRESSED {
+    case UM_TOGGLE_MOD_SANDS: if_pressed {
       toggle_default_layer( KL_(MOD_SANDS) );
       //eeconfig_update_default_layer( default_layer_state );
     } break;
 
-    case UM_TOGGLE_MOD_ARROW: IF_PRESSED {
+    case UM_TOGGLE_MOD_ARROW: if_pressed {
       toggle_default_layer( KL_(MOD_RSIDE) );
       //eeconfig_update_default_layer( default_layer_state );
     } break;
     
-    case UM_DISPLAY_SETTINGS: IF_PRESSED {
+    case UM_DISPLAY_SETTINGS: if_pressed {
       action_displaySettings();
     } break;
 
-    case UM_1_B ... UM_0_A: IF_PRESSED {
+    case UM_1_B ... UM_0_A: if_pressed {
       uint8_t kc;
-      uint8_t isShifted = anyMods( storeMods() ) & SHIFT_MASK;
+      bool isShifted = anyMods( storeMods() ) & SHIFT_MASK;
       if ( isShifted ){
         switch (macro_id){
           case UM_1_B: { kc = KC_B; } break;
@@ -501,14 +509,14 @@ action_displaySettings( void )
   SEND_STRING( "default_layer_state:\n" );
   if ( state == 0 ){
     SEND_STRING( "  fall back to " );
-    send_string_P( layer_names_lut[0] );
+    send_string_P( layerNameStr_P(0) );
     SEND_STRING( "\n" );
   }
   else {
     for ( int i = 0; i < KL_NUM; i++ ){
       if ( state & (1U<<i) ){
         SEND_STRING( "  " );
-        send_string_P( layer_names_lut[i] );
+        send_string_P( layerNameStr_P(i) );
         SEND_STRING( " = active\n" );
       }
     }
@@ -519,6 +527,18 @@ static void
 toggle_default_layer(enum keymap_layer layer)
 {
   default_layer_xor( 1UL << layer );
+}
+
+static const char* 
+layerNameStr_P( enum keymap_layer layer )
+{
+# define DEFINE_STR_ITEM( name )  STR_##name[] PROGMEM = #name
+# define SET_LAYER_NAMES_LUT_ITEM( name )  [KL_(name)] = STR_##name
+  static const char 
+    LAYER_NAMES_EVAL( DEFINE_STR_ITEM ),
+    * const layer_names_lut[KL_NUM] = { LAYER_NAMES_EVAL( SET_LAYER_NAMES_LUT_ITEM ) };
+
+  return (layer_names_lut[layer]);
 }
 
 static struct for_mods 
@@ -539,7 +559,7 @@ restoreMods( struct for_mods mods )
   set_oneshot_mods( mods.oneshot );
 }
 
-static uint8_t 
+static mod_bits_t 
 anyMods( struct for_mods mods )
 {
   return (  mods.real 
