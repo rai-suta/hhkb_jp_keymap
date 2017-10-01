@@ -3,11 +3,13 @@
 
 #include "keyboards/hhkb/config.h"
 
+// quantum function settings
 #undef  TAPPING_TERM
 #define TAPPING_TERM        ( 500 )
-#define TAPPING_FORCE_HOLD
+#define TAPPING_FORCE_HOLD 
 #define LEADER_TIMEOUT      ( 1000 )
 
+// cancel_capsLock settings
 #ifdef HHKB_JP
 # define CANCEL_CAPSLOCK_KEY_POSITIONS    \
     {                                     \
