@@ -6,23 +6,24 @@
 // Key position per keyboard layout
 #ifdef JIS_KEYCODE
   // JIS keyboard layout
-# define KP_LBRACKET            ( KC_RBRACKET ) // [
-# define KP_RBRACKET            ( KC_BSLASH )   // ]
-# define KP__LR_BRACKET         ( KC_8 )        // unshifted (
-# define KP__RR_BRACKET         ( KC_9 )        // unshifted )
-# define KP__LA_BRANKETS        ( KC_COMMA )    // unshifted <
-# define KP__RA_BRANKETS        ( KC_DOT )      // unshifted >
+# define KP_L_BRACKET_S         ( KC_RBRACKET ) // [ ({)
+# define KP_R_BRACKET_S         ( KC_BSLASH )   // ] (})
+# define KP__L_RBRACKET         ( KC_8 )        // unshifted (
+# define KP__R_RBRACKET         ( KC_9 )        // unshifted )
+# define KP__L_ABRANKETS        ( KC_COMMA )    // unshifted <
+# define KP__R_ABRANKETS        ( KC_DOT )      // unshifted >
 # define KP__SGLQUOTE           ( KC_7 )        // unshifted '
 # define KP__DBLQUOTE           ( KC_2 )        // unshifted "
-#else
+#endif
+#ifdef ISO_KEYCODE
   // ISO keyboard layout
-# define KP_LBRACKET            ( KC_LBRACKET )
-# define KP_RBRACKET            ( KC_RBRACKET )
-# define KP__LR_BRACKET         ( KC_9 )
-# define KP__RR_BRACKET         ( KC_0 )
-# define KP__LA_BRANKETS        ( KC_COMMA )
-# define KP__RA_BRANKETS        ( KC_DOT )
-# define KP_SGLQUOTE            ( KC_QUOT )
+# define KP_L_BRACKET_S         ( KC_LBRACKET ) // [ ({)
+# define KP_R_BRACKET_S         ( KC_RBRACKET ) // ] (})
+# define KP__L_RBRACKET         ( KC_9 )
+# define KP__R_RBRACKET         ( KC_0 )
+# define KP__L_ABRANKETS        ( KC_COMMA )
+# define KP__R_ABRANKETS        ( KC_DOT )
+# define KP_SGLQUOTE_S          ( KC_QUOT )     // ' (")
 #endif
 
 // Fn keys definition.
@@ -64,18 +65,18 @@ enum user_macro{
 static void action_displaySettings( void );
 
 // keymap layer names
-#define LAYER_NAMES_EVAL( macro ) \
-  macro(PLN_QWERTY), \
-  macro(PLN_DVORAK), \
-  macro(MOD_FN),     \
-  macro(MOD_RSIDE),  \
-  macro(MOD_SANDS),  \
-  macro(EDIT_CRSR),  \
-  macro(EDIT_SLCT),  \
-  macro(EDIT_SCRL),  \
-  macro(EDIT_MEDIA), \
-  macro(INPUT),      \
-  macro(STNG)
+#define LAYER_NAMES_EVAL( func ) \
+  func(QWERTY),     \
+  func(DVORAK),     \
+  func(MOD_FN),     \
+  func(MOD_RSIDE),  \
+  func(MOD_SANDS),  \
+  func(EDIT_CRSR),  \
+  func(EDIT_SLCT),  \
+  func(EDIT_SCRL),  \
+  func(EDIT_MEDIA), \
+  func(INPUT),      \
+  func(STNG)
 
 // keymap layer specifier
 //    keymaps[...]
@@ -98,7 +99,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER) )
 # define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER) )
 # define MO_MF    ( MO(KL_MOD_FN) )
-  [KL_(PLN_QWERTY)] = KEYMAP_JP(
+  [KL_(QWERTY)] = KEYMAP_JP(
      KC_ESC,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_MINS,  KC_EQL, KC_JYEN, KC_BSPC,
      KC_TAB,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,     KC_I,    KC_O,    KC_P, KC_LBRC, KC_RBRC,
     KC_LCTL,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,     KC_K,    KC_L, KC_SCLN, KC_QUOT, KC_BSLS,  KC_ENT,
@@ -106,7 +107,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       MO_MF, KC_ZKHK, KC_LGUI, KC_LALT,  M_MHEN,      KC_SPC     ,  M_HENK,  KC_KANA, KC_RALT,   MO_MF, KC_LEFT, KC_DOWN, KC_RGHT 
   ),
   
-  [KL_(PLN_DVORAK)] = KEYMAP_JP(
+  [KL_(DVORAK)] = KEYMAP_JP(
     _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_LBRC, KC_RBRC,  KC_GRV, _______,
     _______, KC_QUOT, KC_COMM,  KC_DOT,    KC_P,    KC_Y,    KC_F,    KC_G,     KC_C,    KC_R,    KC_L, KC_SLSH,  KC_EQL,
     _______,    KC_A,    KC_O,    KC_E,    KC_U,    KC_I,    KC_D,    KC_H,     KC_T,    KC_N,    KC_S, KC_MINS, _______, _______,
@@ -211,10 +212,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 # define M_PB     ( M(UM_PAIRED_BRANKETS) )
   [KL_(INPUT)] = KEYMAP_JP(
-    _______, _______,    M_PB, _______, _______, _______, _______,    M_PB,    M_PB,    M_PB, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, KC_LEAD, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
-    _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A),    M_PB, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______,    M_PB, _______, _______, _______, _______, _______,
+    _______, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB,    M_PB,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_LEAD, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
+    _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A),    M_PB, XXXXXXX, _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
     _______, _______, _______, _______,   M_SSL,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
 
@@ -237,35 +238,26 @@ const uint16_t PROGMEM fn_actions[] = {
 
 // Modifier utility
 typedef uint8_t mod_bits_t;
-static const mod_bits_t SHIFT_MASK = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
+static const mod_bits_t SHIFT_MOD_BITS = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 struct for_mods {
   mod_bits_t real, weak, macro, oneshot;
 };
-static struct for_mods storeMods( void );
-static void restoreMods( struct for_mods mods );
+static struct for_mods get_stMods( void );
+static void set_stMods( struct for_mods mods );
 static mod_bits_t anyMods( struct for_mods mods );
-static void clearAllMods( void );
-
-// action_get_macro status of parameter
-struct for_agm_status {
-    keyrecord_t *record;
-    uint8_t macro_id;
-    uint8_t opt;
-    struct for_mods mods;
-};
-typedef const struct for_agm_status AGM_STATUS_T;
+static void clear_allMods( void );
 
 #define if_pressed  if ( record->event.pressed )
-static const macro_t* getMacro_pairedBrankets( AGM_STATUS_T* const status );
+static const macro_t* getMacro_pairedBrankets( keyrecord_t *record, bool isShifted );
 
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
   dprintf( "====action_get_macro====\n"
            "record.\n"
-           "  e.p. = %u\n"
-           "  t.c. = %u\n"
-           "  t.i. = %u\n"
+           "  e.p. = %u\n"    // event.pressed
+           "  t.c. = %u\n"    // tap.count
+           "  t.i. = %u\n"    // tap.interrupted
            "macro_id = %u\n"
            "opt = %u\n"
            , record->event.pressed
@@ -274,12 +266,8 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
            , macro_id
            , opt );
 
-  AGM_STATUS_T agm_status = {
-    .record = record,
-    .macro_id = macro_id,
-    .opt = opt,
-    .mods = storeMods(),
-  };
+  const struct for_mods st_mods = get_stMods();
+  const bool isShifted = !!( anyMods( st_mods ) & SHIFT_MOD_BITS );
 
   switch (macro_id) {
     case UM_DELETE_FORWARD_WORD: {
@@ -303,23 +291,23 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     case UM_SWITCH_EDIT_LAYER: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(EDIT_CRSR)),       MACRO_NONE ),
-                /*release*/   ( clearAllMods(), 
+                /*release*/   ( clear_allMods(), 
                                 layer_and(~LAYER_MASK_OF_EDIT), MACRO_SEND_NONE ),
-                /*tap*/       ( clearAllMods(), 
+                /*tap*/       ( clear_allMods(), 
                                 layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ));
     } break;
 
     case UM_SWITCH_INPUT_LAYER: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(INPUT)),            MACRO_NONE ),
-                /*release*/   ( clearAllMods(), 
+                /*release*/   ( clear_allMods(), 
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
-                /*tap*/       ( clearAllMods(), 
+                /*tap*/       ( clear_allMods(), 
                                 layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ));
     } break;
 
     case UM_SWITCH_STNG_LAYER: {
-      clearAllMods();
+      clear_allMods();
       if ( layer_state & (1UL << KL_(STNG)) ){
         layer_off( KL_(STNG) );
       }
@@ -354,11 +342,22 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     } break;
 
     case UM_PAIRED_BRANKETS: {
-      return getMacro_pairedBrankets( &agm_status );
+      // evacuate or restoration mods
+      static struct for_mods evacuatedMods;
+      if ( record->event.pressed ) {
+        evacuatedMods = st_mods;
+        clear_allMods();
+      } 
+      else {
+        set_stMods( evacuatedMods );
+      }
+      send_keyboard_report();
+
+      return getMacro_pairedBrankets( record, isShifted );
     } break;
 
     case UM_TOGGLE_PLN_DVORAK: if_pressed {
-      toggle_default_layer( KL_(PLN_DVORAK) );
+      toggle_default_layer( KL_(DVORAK) );
       //eeconfig_update_default_layer( default_layer_state );
     } break;
 
@@ -378,7 +377,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 
     case UM_1_B ... UM_0_A: if_pressed {
       uint8_t kc;
-      bool isShifted = anyMods( storeMods() ) & SHIFT_MASK;
       if ( isShifted ){
         switch (macro_id){
           case UM_1_B: { kc = KC_B; } break;
@@ -401,65 +399,53 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
   return MACRO_NONE;
 }
 
+// Estimate brackets type frome current event.key
 static const macro_t* 
-getMacro_pairedBrankets( AGM_STATUS_T* const status )
+getMacro_pairedBrankets( keyrecord_t *record, bool isShifted )
 {
-  keyrecord_t * const record = status->record;
-  const keypos_t key = status->record->event.key;
-  const bool pressed = status->record->event.pressed;
+  keypos_t event_key = record->event.key;
 
   // Get keycode at default-layer.
   uint32_t layer_state_mem = layer_state;
   layer_state = 0;
-  uint16_t keycode = keymap_key_to_keycode( layer_switch_get_layer(key), key );
+  uint16_t keycode = keymap_key_to_keycode( layer_switch_get_layer(event_key), 
+                                            event_key );
   layer_state = layer_state_mem;
 
-  // Evacuation and restoration mods.
-  static struct for_mods mods;
-  if ( pressed ){
-    mods = status->mods;
-    clearAllMods();
-  } 
-  else {
-    restoreMods( mods );
-  }
-  send_keyboard_report();
-
   // Select macro sequence.
-  bool isShifted = anyMods( status->mods ) & SHIFT_MASK;
   switch ( keycode ){
-#   ifdef KP_LBRACKET
-    case KP_LBRACKET: {
+#   ifdef KP_L_BRACKET_S
+    case KP_L_BRACKET_S: {
       if ( isShifted ){
         return MACRODOWN( D(LSFT),
-                            TYPE(KP_LBRACKET),
-                            TYPE(KP_LBRACKET),
+                            TYPE(KP_L_BRACKET_S),
+                            TYPE(KP_R_BRACKET_S),
                             U(LSFT),
                           T(LEFT), END );
       }
       else {
-        return MACRODOWN( TYPE(KP_LBRACKET),
-                          TYPE(KP_LBRACKET),
+        return MACRODOWN( TYPE(KP_L_BRACKET_S),
+                          TYPE(KP_R_BRACKET_S),
                           T(LEFT), END );
       }
     } break;
 #   endif
 
-#   ifdef KP__LR_BRACKET
-    case KP__LR_BRACKET: {
+#   ifdef KP__L_RBRACKET
+    case KP__L_RBRACKET: {
       return MACRODOWN( D(LSFT),
-                          TYPE(KP__LR_BRACKET),
-                          TYPE(KP__LR_BRACKET),
+                          TYPE(KP__L_RBRACKET),
+                          TYPE(KP__R_RBRACKET),
                           U(LSFT),
                         T(LEFT), END );
     } break;
 #   endif
 
-#   ifdef KP__LA_BRANKETS
-    case KP__LA_BRANKETS: {
+#   ifdef KP__L_ABRANKETS
+    case KP__L_ABRANKETS: {
       return MACRODOWN( D(LSFT),
-                          TYPE(KP__LA_BRANKETS),
-                          TYPE(KP__LA_BRANKETS),
+                          TYPE(KP__L_ABRANKETS),
+                          TYPE(KP__R_ABRANKETS),
                           U(LSFT),
                         T(LEFT), END );
     } break;
@@ -467,26 +453,29 @@ getMacro_pairedBrankets( AGM_STATUS_T* const status )
 
 #   ifdef KP__SGLQUOTE
     case KP__SGLQUOTE: {
+      return MACRODOWN( D(LSFT),
+                          TYPE(KP__SGLQUOTE),
+                          TYPE(KP__SGLQUOTE),
+                          U(LSFT),
+                        T(LEFT), END );
+    } break;
+#   endif
+
+#   ifdef KP_SGLQUOTE_S
+    case KP_SGLQUOTE_S: {
       if ( isShifted ){
         return MACRODOWN( D(LSFT),
-                            TYPE(KP__SGLQUOTE),
-                            TYPE(KP__SGLQUOTE),
+                            TYPE(KP_SGLQUOTE_S),
+                            TYPE(KP_SGLQUOTE_S),
                             U(LSFT),
                           T(LEFT), END );
       }
       else {
-        return MACRODOWN( TYPE(KP__SGLQUOTE),
-                          TYPE(KP__SGLQUOTE),
+        return MACRODOWN( TYPE(KP_SGLQUOTE_S),
+                          TYPE(KP_SGLQUOTE_S),
                           T(LEFT), END );
       }
-    } break;
-#   endif
 
-#   ifdef KP_SGLQUOTE
-    case KP_SGLQUOTE: {
-      return MACRODOWN( TYPE(KP_SGLQUOTE),
-                        TYPE(KP_SGLQUOTE),
-                        T(LEFT), END );
     } break;
 #   endif
 
@@ -499,15 +488,6 @@ getMacro_pairedBrankets( AGM_STATUS_T* const status )
                         T(LEFT), END );
     } break;
 #   endif
-
-    default: {
-      if ( pressed ){
-        register_code( keycode );
-      }
-      else {
-        unregister_code( keycode );
-      }
-    } break;
   }
 
   return MACRO_NONE;
@@ -554,7 +534,7 @@ layerNameStr_P( enum keymap_layer layer )
 }
 
 static struct for_mods 
-storeMods( void )
+get_stMods( void )
 {
   return (struct for_mods){ .real = get_mods(),
                             .weak = get_weak_mods(),
@@ -563,7 +543,7 @@ storeMods( void )
 }
 
 static void 
-restoreMods( struct for_mods mods )
+set_stMods( struct for_mods mods )
 {
   set_mods( mods.real );
   set_weak_mods( mods.weak );
@@ -581,7 +561,7 @@ anyMods( struct for_mods mods )
 }
 
 static void 
-clearAllMods( void )
+clear_allMods( void )
 {
   clear_mods();
   clear_weak_mods();
