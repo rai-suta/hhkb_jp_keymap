@@ -19,10 +19,10 @@
   // ISO keyboard layout
 # define KP_L_BRACKET_S         ( KC_LBRACKET ) // [ ({)
 # define KP_R_BRACKET_S         ( KC_RBRACKET ) // ] (})
-# define KP__L_RBRACKET         ( KC_9 )
-# define KP__R_RBRACKET         ( KC_0 )
-# define KP__L_ABRANKETS        ( KC_COMMA )
-# define KP__R_ABRANKETS        ( KC_DOT )
+# define KP__L_RBRACKET         ( KC_9 )        // unshifted (
+# define KP__R_RBRACKET         ( KC_0 )        // unshifted )
+# define KP__L_ABRANKETS        ( KC_COMMA )    // unshifted <
+# define KP__R_ABRANKETS        ( KC_DOT )      // unshifted >
 # define KP_SGLQUOTE_S          ( KC_QUOT )     // ' (")
 #endif
 
@@ -44,6 +44,7 @@ enum user_macro{
   UM_DELETE_BACKWARD_WORD,
   UM_SELECT_WORD,
   UM_PAIRED_BRANKETS,
+  UM_CLEAR_DEFAULT_LAYER,
   UM_TOGGLE_PLN_DVORAK,
   UM_TOGGLE_MOD_ARROW,
   UM_TOGGLE_MOD_SANDS,
@@ -219,12 +220,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______,   M_SSL,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
 
+# define M_CDL    ( M(UM_CLEAR_DEFAULT_LAYER) )
 # define M_TPD    ( M(UM_TOGGLE_PLN_DVORAK) )
 # define M_TMA    ( M(UM_TOGGLE_MOD_ARROW) )
 # define M_TMS    ( M(UM_TOGGLE_MOD_SANDS) )
 # define M_DSST   ( M(UM_DISPLAY_SETTINGS) )
   [KL_(STNG)] = KEYMAP_JP(
-    XXXXXXX,   M_TPD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX,   M_TPD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_CDL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX,  M_DSST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA, XXXXXXX,
@@ -253,13 +255,10 @@ static const macro_t* getMacro_pairedBrankets( keyrecord_t *record, bool isShift
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
-  dprintf( "====action_get_macro====\n"
-           "record.\n"
-           "  e.p. = %u\n"    // event.pressed
-           "  t.c. = %u\n"    // tap.count
-           "  t.i. = %u\n"    // tap.interrupted
+  dprintf( "\n==== action_get_macro ====\n"
+           "record   = { %u, %u, %u }\n"
            "macro_id = %u\n"
-           "opt = %u\n"
+           "opt      = %u\n"
            , record->event.pressed
            , record->tap.count
            , record->tap.interrupted
@@ -291,19 +290,15 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     case UM_SWITCH_EDIT_LAYER: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(EDIT_CRSR)),       MACRO_NONE ),
-                /*release*/   ( clear_allMods(), 
-                                layer_and(~LAYER_MASK_OF_EDIT), MACRO_SEND_NONE ),
-                /*tap*/       ( clear_allMods(), 
-                                layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ));
+                /*release*/   ( layer_and(~LAYER_MASK_OF_EDIT), MACRO_SEND_NONE ),
+                /*tap*/       ( layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ));
     } break;
 
     case UM_SWITCH_INPUT_LAYER: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(INPUT)),            MACRO_NONE ),
-                /*release*/   ( clear_allMods(), 
-                                layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
-                /*tap*/       ( clear_allMods(), 
-                                layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ));
+                /*release*/   ( layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
+                /*tap*/       ( layer_and(~LAYER_MASK_OF_INPUT), MACRO(TYPE(KC_SINO), END) ));
     } break;
 
     case UM_SWITCH_STNG_LAYER: {
@@ -317,22 +312,20 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     } break;
 
     case UM_TURN_EDIT_LAYER: if_pressed {
-      uint32_t state = layer_state & LAYER_MASK_OF_EDIT;
-      enum keymap_layer kl;
-      for ( kl = KL_NUM-1; kl > 0; kl-- ){
-        if ( state & (1U<<kl) ){ break; }
-      }
-      layer_and( (~LAYER_MASK_OF_EDIT) | (1U<<KL_(EDIT_CRSR)) );
-      switch (kl){
+      enum keymap_layer current_layer = biton32( layer_state );
+      layer_move( KL_(EDIT_CRSR) );
+      switch (current_layer){
         case KL_(EDIT_CRSR):  layer_on( KL_(EDIT_SCRL) );   break;
         case KL_(EDIT_SLCT):  layer_on( KL_(EDIT_SCRL) );   break;
         case KL_(EDIT_SCRL):  layer_on( KL_(EDIT_MEDIA) );  break;
-        case KL_(EDIT_MEDIA): break;  /* layer on KL_(EDIT_SCRL) */
-        default:  break;
+        case KL_(EDIT_MEDIA): layer_on( KL_(EDIT_SCRL) );   break;
+        default: break;
       }
     } break;
 
-    case UM_TURN_INPUT_LAYER: {} break;
+    case UM_TURN_INPUT_LAYER: {
+      /* do nothing */
+    } break;
 
     case UM_SELECT_WORD: {
       return MACRODOWN( D(LCTL), 
@@ -356,19 +349,24 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       return getMacro_pairedBrankets( record, isShifted );
     } break;
 
+    case UM_CLEAR_DEFAULT_LAYER: if_pressed {
+      default_layer_set( 0 );
+      eeconfig_update_default_layer( default_layer_state );
+    } break;
+
     case UM_TOGGLE_PLN_DVORAK: if_pressed {
       toggle_default_layer( KL_(DVORAK) );
-      //eeconfig_update_default_layer( default_layer_state );
+      eeconfig_update_default_layer( default_layer_state );
     } break;
 
     case UM_TOGGLE_MOD_SANDS: if_pressed {
       toggle_default_layer( KL_(MOD_SANDS) );
-      //eeconfig_update_default_layer( default_layer_state );
+      eeconfig_update_default_layer( default_layer_state );
     } break;
 
     case UM_TOGGLE_MOD_ARROW: if_pressed {
       toggle_default_layer( KL_(MOD_RSIDE) );
-      //eeconfig_update_default_layer( default_layer_state );
+      eeconfig_update_default_layer( default_layer_state );
     } break;
     
     case UM_DISPLAY_SETTINGS: if_pressed {
@@ -396,6 +394,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     } break;
   }
 
+  dprintf( "return MACRO_NONE\n" );
   return MACRO_NONE;
 }
 
@@ -403,14 +402,15 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 static const macro_t* 
 getMacro_pairedBrankets( keyrecord_t *record, bool isShifted )
 {
-  keypos_t event_key = record->event.key;
-
   // Get keycode at default-layer.
-  uint32_t layer_state_mem = layer_state;
-  layer_state = 0;
-  uint16_t keycode = keymap_key_to_keycode( layer_switch_get_layer(event_key), 
-                                            event_key );
-  layer_state = layer_state_mem;
+  uint16_t keycode = ({
+    uint32_t layer_state_mem = layer_state;
+    layer_state = 0;
+    uint8_t layer = layer_switch_get_layer( record->event.key );
+    keycode = keymap_key_to_keycode( layer, record->event.key );
+    layer_state = layer_state_mem;
+    keycode;
+  });
 
   // Select macro sequence.
   switch ( keycode ){
@@ -507,9 +507,9 @@ action_displaySettings( void )
   else {
     for ( int i = 0; i < KL_NUM; i++ ){
       if ( state & (1U<<i) ){
-        SEND_STRING( "  " );
+        SEND_STRING( "  +" );
         send_string_P( layerNameStr_P(i) );
-        SEND_STRING( " = active\n" );
+        SEND_STRING( "\n" );
       }
     }
   }
