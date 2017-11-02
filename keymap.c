@@ -79,7 +79,7 @@ static void action_displaySettings( void );
   func(INPUT),      \
   func(STNG)
 
-// keymap layer specifier
+// keymaps subscript
 //    keymaps[...]
 #define KL_( name )     KL_##name
 enum keymap_layer{
@@ -249,24 +249,26 @@ static void set_stMods( struct for_mods mods );
 static mod_bits_t anyMods( struct for_mods mods );
 static void clear_allMods( void );
 
-#define if_pressed  if ( record->event.pressed )
-static const macro_t* getMacro_pairedBrankets( keyrecord_t *record, bool isShifted );
+// subroutine of action_get_macro
+static const macro_t* getMacro_pairedBrankets( keyrecord_t *record, uint16_t keycode, bool isShifted );
+static uint16_t getKeycode_atDefaultLayer( keyrecord_t *record );
 
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
+  const bool event_pressed = record->event.pressed;
+  const struct for_mods st_mods = get_stMods();
+  const bool isShifted = !!( anyMods( st_mods ) & SHIFT_MOD_BITS );
+
   dprintf( "\n==== action_get_macro ====\n"
            "record   = { %u, %u, %u }\n"
            "macro_id = %u\n"
            "opt      = %u\n"
-           , record->event.pressed
+           , event_pressed
            , record->tap.count
            , record->tap.interrupted
            , macro_id
            , opt );
-
-  const struct for_mods st_mods = get_stMods();
-  const bool isShifted = !!( anyMods( st_mods ) & SHIFT_MOD_BITS );
 
   switch (macro_id) {
     case UM_DELETE_FORWARD_WORD: {
@@ -311,7 +313,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       }
     } break;
 
-    case UM_TURN_EDIT_LAYER: if_pressed {
+    case UM_TURN_EDIT_LAYER: if ( event_pressed ) {
       enum keymap_layer current_layer = biton32( layer_state );
       layer_move( KL_(EDIT_CRSR) );
       switch (current_layer){
@@ -337,7 +339,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     case UM_PAIRED_BRANKETS: {
       // evacuate or restoration mods
       static struct for_mods evacuatedMods;
-      if ( record->event.pressed ) {
+      if ( event_pressed ) {
         evacuatedMods = st_mods;
         clear_allMods();
       } 
@@ -346,34 +348,36 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       }
       send_keyboard_report();
 
-      return getMacro_pairedBrankets( record, isShifted );
+      uint16_t keycode = getKeycode_atDefaultLayer( record );
+
+      return getMacro_pairedBrankets( record, keycode, isShifted );
     } break;
 
-    case UM_CLEAR_DEFAULT_LAYER: if_pressed {
+    case UM_CLEAR_DEFAULT_LAYER: if ( event_pressed ) {
       default_layer_set( 0 );
       eeconfig_update_default_layer( default_layer_state );
     } break;
 
-    case UM_TOGGLE_PLN_DVORAK: if_pressed {
+    case UM_TOGGLE_PLN_DVORAK: if ( event_pressed ) {
       toggle_default_layer( KL_(DVORAK) );
       eeconfig_update_default_layer( default_layer_state );
     } break;
 
-    case UM_TOGGLE_MOD_SANDS: if_pressed {
+    case UM_TOGGLE_MOD_SANDS: if ( event_pressed ) {
       toggle_default_layer( KL_(MOD_SANDS) );
       eeconfig_update_default_layer( default_layer_state );
     } break;
 
-    case UM_TOGGLE_MOD_ARROW: if_pressed {
+    case UM_TOGGLE_MOD_ARROW: if ( event_pressed ) {
       toggle_default_layer( KL_(MOD_RSIDE) );
       eeconfig_update_default_layer( default_layer_state );
     } break;
     
-    case UM_DISPLAY_SETTINGS: if_pressed {
+    case UM_DISPLAY_SETTINGS: if ( event_pressed ) {
       action_displaySettings();
     } break;
 
-    case UM_1_B ... UM_0_A: if_pressed {
+    case UM_1_B ... UM_0_A: if ( event_pressed ) {
       uint8_t kc;
       if ( isShifted ){
         switch (macro_id){
@@ -398,20 +402,22 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
   return MACRO_NONE;
 }
 
+static uint16_t
+getKeycode_atDefaultLayer( keyrecord_t *record )
+{
+  uint32_t layer_state_mem = layer_state;
+  layer_state = 0;
+  uint8_t layer = layer_switch_get_layer( record->event.key );
+  uint16_t keycode = keymap_key_to_keycode( layer, record->event.key );
+  layer_state = layer_state_mem;
+
+  return keycode;
+}
+
 // Estimate brackets type frome current event.key
 static const macro_t* 
-getMacro_pairedBrankets( keyrecord_t *record, bool isShifted )
+getMacro_pairedBrankets( keyrecord_t *record, uint16_t keycode, bool isShifted )
 {
-  // Get keycode at default-layer.
-  uint16_t keycode = ({
-    uint32_t layer_state_mem = layer_state;
-    layer_state = 0;
-    uint8_t layer = layer_switch_get_layer( record->event.key );
-    keycode = keymap_key_to_keycode( layer, record->event.key );
-    layer_state = layer_state_mem;
-    keycode;
-  });
-
   // Select macro sequence.
   switch ( keycode ){
 #   ifdef KP_L_BRACKET_S
