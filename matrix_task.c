@@ -1,26 +1,13 @@
 #include "quantum.h"
+#include "config.h"
 #include "action_macro.h"
 #include <stdarg.h>
 
 LEADER_EXTERNS();
 extern bool matrix_key_count(void);  /* matrix.c */
 static void cancel_capsLock(void);
-static void act_leaderKey(void);
-
-#ifdef CONSOLE_ENABLE
-
-  static void __print_layer_state(void);
-# define print_layer_state()  do { if (debug_enable) __print_layer_state(); } while (0)
-
-  static void __print_mods(void);
-# define print_mods()         do { if (debug_enable) __print_mods(); } while (0)
-
-#else   /* CONSOLE_ENABLE */
-
-# define print_layer_state()
-# define print_mods()
-
-#endif  /* CONSOLE_ENABLE */
+static void dprint_layer_state(void);
+static void dprint_mods(void);
 
 // Runs just one time when the keyboard initializes.
 // TODO: Call from "hhkb/matrix.c".
@@ -54,16 +41,14 @@ void matrix_scan_user(void)
     led_kana = false;
   }
 
-  // when timeout from typing of KC_LEAD
+  // be triggered from KC_LEAD
   LEADER_DICTIONARY() {
-    leading = false;
     leader_end();
-    act_leaderKey();
   }
 
-  if (true) {
-    print_layer_state();
-    print_mods();
+  if ( debug_enable ) {
+    dprint_layer_state();
+    dprint_mods();
   }
 }
 
@@ -84,7 +69,7 @@ static void cancel_capsLock(void)
   if ( layer_state > default_layer_state ){
     return;
   }
-  
+
   // if shift-key being pressed then, process break.
   bool isShiftOn = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
   if ( isShiftOn ){
@@ -127,43 +112,50 @@ struct for_keySeq2String {
 
 #define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
 
-static void act_leaderKey(void)
+void leader_start(void)
 {
-  static const struct for_keySeq2String 
+  dprintf( "leader_start\n" );
+  layer_clear();
+}
+
+void leader_end(void)
+{
+  dprintf( "leader_end\n" );
+  leading = false;
+
+  static const struct for_keySeq2String
     SEQ_STR_EVAL( SEQ_STR_ITEMS ),
     * const seq_strings[] = { SEQ_STR_EVAL( SEQ_STR_PITEMS ) };
 
   for ( int i = 0; i < NUM_OF(seq_strings); i++ ) {
-    const uint16_t *it_ks = seq_strings[i]->keyseq;
-    const char *it_str = seq_strings[i]->string;
+    const uint16_t *it_ks  = seq_strings[i]->keyseq;
+    const char     *it_str = seq_strings[i]->string;
     SEQ_FIVE_KEYS(
-      pgm_read_word(it_ks),
-      pgm_read_word(++it_ks),
-      pgm_read_word(++it_ks),
-      pgm_read_word(++it_ks),
-      pgm_read_word(++it_ks)
+      pgm_read_word(it_ks+0),
+      pgm_read_word(it_ks+1),
+      pgm_read_word(it_ks+2),
+      pgm_read_word(it_ks+3),
+      pgm_read_word(it_ks+4)
     ){
       if ( seq_strings[i] == SEQ_STR_PITEMS(G, C, __ ,__ ,__) ) {
+        /* type seq-string */
         send_string_P( it_str );
+        /* move cursor into quotes */
         action_macro_play( MACRO( T(LEFT), END ));
-      } 
+      }
       else {
+        /* type seq-string */
         send_string_P( it_str );
       }
 
       return;
     }
   }
-  
-  SEQ_TWO_KEYS(KC_G, KC_C) {
-      SEND_STRING("git commit -m ''");
-      action_macro_play( MACRO( T(LEFT), END ));
-  }
 }
 
 #ifdef CONSOLE_ENABLE
 
-static void __print_layer_state(void)
+static void dprint_layer_state(void)
 {
   static uint32_t last_state;
 
@@ -185,7 +177,7 @@ struct for_mods {
                             && x.macro == y.macro \
                             && x.oneshot == y.oneshot )
 
-static void __print_mods(void)
+static void dprint_mods(void)
 {
   static struct for_mods last_mods;
   struct for_mods mods = { get_mods(), get_weak_mods(), get_macro_mods(), get_oneshot_mods() };
@@ -194,7 +186,7 @@ static void __print_mods(void)
     dprintf("mods\n"
             "  .r. = %08b\n"
             "  .w. = %08b\n"
-            "  .m. = %08b\n" 
+            "  .m. = %08b\n"
             "  .o. = %08b\n"
             , mods.real, mods.weak, mods.macro, mods.oneshot );
     last_mods = mods;
