@@ -35,34 +35,27 @@
 enum user_macro{
   UM_NOTHING = 0,
   UM_SANDS,
-  UM_SWITCH_EDIT_LAYER,
-  UM_SWITCH_INPUT_LAYER,
+  // UM_SWITCH_* is that goto layer when pressed, return layer when release
+  UM_SWITCH_EDIT_LAYER_WITH_KC,
+  UM_SWITCH_INPUT_LAYER_WITH_KC,
   UM_SWITCH_STNG_LAYER,
+  // UM_TURN_* is that goto layer when pressed, keep layer when release
   UM_TURN_EDIT_LAYER,
   UM_TURN_INPUT_LAYER,
-  UM_DELETE_FORWARD_WORD,
-  UM_DELETE_BACKWARD_WORD,
-  UM_SELECT_WORD,
-  UM_PAIRED_BRANKETS,
-  UM_CLEAR_DEFAULT_LAYER,
+  // UM_TOGGLE_* is that toggle default_layer
   UM_TOGGLE_PLN_DVORAK,
   UM_TOGGLE_MOD_ARROW,
   UM_TOGGLE_MOD_SANDS,
+  UM_DELETE_FORWARD_WORD,
+  UM_DELETE_BACKWARD_WORD,
+  UM_SELECT_WORD,
+  UM_INPUT_PAIRED_BRANKETS,
+  UM_CLEAR_DEFAULT_LAYER,
   UM_DISPLAY_SETTINGS,
-  UM_1_B,
-  UM_2_C,
-  UM_3_D,
-  UM_4_E,
-  UM_5_F,
-  UM_6_,
-  UM_7_,
-  UM_8_,
-  UM_9_,
-  UM_0_A,
 };
 #define UM( id )  ( M(UM_##id) )
-#define KC_SECO  ( KC_MHEN )    // input key when UM_SWITCH_EDIT_LAYER is tapped
-#define KC_SINO  ( KC_HENK )    // input key when UM_SWITCH_INPUT_LAYER is tapped
+#define KC_SECO  ( KC_MHEN )    // input key when UM_SWITCH_EDIT_LAYER_WITH_KC is tapped
+#define KC_SINO  ( KC_HENK )    // input key when UM_SWITCH_INPUT_LAYER_WITH_KC is tapped
 static void action_displaySettings( void );
 
 // keymap layer names
@@ -97,9 +90,9 @@ static const char* layerNameStr_P( enum keymap_layer layer );
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-# define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER) )
-# define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER) )
 # define MO_MF    ( MO(KL_MOD_FN) )
+# define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER_WITH_KC) )  // switch layer when pressed, send KC_SECO when tapped
+# define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER_WITH_KC) ) // switch layer when pressed, send KC_SINO when tapped
   [KL_(QWERTY)] = KEYMAP_JP(
      KC_ESC,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_MINS,  KC_EQL, KC_JYEN, KC_BSPC,
      KC_TAB,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,     KC_I,    KC_O,    KC_P, KC_LBRC, KC_RBRC,
@@ -161,11 +154,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define OSM_SFT  ( OSM(MOD_LSFT) )
 # define OSM_GUI  ( OSM(MOD_LGUI) )
   [KL_(EDIT_CRSR)] = KEYMAP_JP(
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX, KC_REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX, KC_REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
     OSM_SFT, KC_UNDO,  KC_CUT, KC_COPY,  KC_PST, XXXXXXX, XXXXXXX,  KC_ENT,   M_DBW,   M_DFW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
-    _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL,  KC_APP, OSM_ALT, _______,   KC_NO, OSM_GUI, OSM_CTL 
+    _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
   ),
 
 # define S_TOP    ( S(LCTL(KC_HOME)) )
@@ -211,11 +204,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
 
-# define M_PB     ( M(UM_PAIRED_BRANKETS) )
+# define M_PB     ( M(UM_INPUT_PAIRED_BRANKETS) )
   [KL_(INPUT)] = KEYMAP_JP(
     _______, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB,    M_PB,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_LEAD, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
-    _______, UM(1_B), UM(2_C), UM(3_D), UM(4_E), UM(5_F),  UM(6_),  UM(7_),  UM(8_),  UM(9_), UM(0_A),    M_PB, XXXXXXX, _______,
+    _______,   KC_P1,   KC_P2,   KC_P3,   KC_P4,   KC_P5,   KC_P6,   KC_P7,   KC_P8,   KC_P9,   KC_P0,    M_PB, XXXXXXX, _______,
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
     _______, _______, _______, _______,   M_SSL,     _______     , _______, _______, _______, _______, _______, _______, _______ 
   ),
@@ -240,33 +233,32 @@ const uint16_t PROGMEM fn_actions[] = {
 
 // Modifier utility
 typedef uint8_t mod_bits_t;
-static const mod_bits_t SHIFT_MOD_BITS = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 struct for_mods {
   mod_bits_t real, weak, macro, oneshot;
 };
+static const mod_bits_t SHIFT_MOD_BITS = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 static struct for_mods get_stMods( void );
+static mod_bits_t get_orMods( void );
 static void set_stMods( struct for_mods mods );
-static mod_bits_t anyMods( struct for_mods mods );
 static void clear_allMods( void );
 
 // subroutine of action_get_macro
 static const macro_t* getMacro_pairedBrankets( keyrecord_t *record, uint16_t keycode, bool isShifted );
-static uint16_t getKeycode_atDefaultLayer( keyrecord_t *record );
+static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
 
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt) 
 {
   const bool event_pressed = record->event.pressed;
-  const struct for_mods st_mods = get_stMods();
-  const bool isShifted = !!( anyMods( st_mods ) & SHIFT_MOD_BITS );
+  const bool isShifted = !!( get_orMods() & SHIFT_MOD_BITS );
 
   dprintf( "\n==== action_get_macro ====\n"
            "record   = { %u, %u, %u }\n"
            "macro_id = %u\n"
            "opt      = %u\n"
-           , event_pressed
+           , record->event.pressed
            , record->tap.count
-           , record->tap.interrupted
+           , record->tap.interrupted  // set from ACTION_MACRO_TAP, MACROTAP
            , macro_id
            , opt );
 
@@ -289,14 +281,14 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       return MACRO_HOLDMOD_TAPKC( record, MOD_BIT(KC_LSHIFT), KC_SPACE );
     } break;
 
-    case UM_SWITCH_EDIT_LAYER: {
+    case UM_SWITCH_EDIT_LAYER_WITH_KC: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(EDIT_CRSR)),       MACRO_NONE ),
                 /*release*/   ( layer_and(~LAYER_MASK_OF_EDIT), MACRO_SEND_NONE ),
                 /*tap*/       ( layer_and(~LAYER_MASK_OF_EDIT), MACRO(TYPE(KC_SECO), END) ));
     } break;
 
-    case UM_SWITCH_INPUT_LAYER: {
+    case UM_SWITCH_INPUT_LAYER_WITH_KC: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(INPUT)),            MACRO_NONE ),
                 /*release*/   ( layer_and(~LAYER_MASK_OF_INPUT), MACRO_SEND_NONE ),
@@ -325,7 +317,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       }
     } break;
 
-    case UM_TURN_INPUT_LAYER: {
+    case UM_TURN_INPUT_LAYER: if ( event_pressed ) {
       /* do nothing */
     } break;
 
@@ -336,11 +328,11 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
                           U(LCTL), END );
     } break;
 
-    case UM_PAIRED_BRANKETS: {
+    case UM_INPUT_PAIRED_BRANKETS: {
       // evacuate or restoration mods
       static struct for_mods evacuatedMods;
       if ( event_pressed ) {
-        evacuatedMods = st_mods;
+        evacuatedMods = get_stMods();
         clear_allMods();
       } 
       else {
@@ -348,8 +340,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       }
       send_keyboard_report();
 
-      uint16_t keycode = getKeycode_atDefaultLayer( record );
-
+      uint16_t keycode = getKeycode_fromDefaultLayer( record );
       return getMacro_pairedBrankets( record, keycode, isShifted );
     } break;
 
@@ -376,26 +367,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
     case UM_DISPLAY_SETTINGS: if ( event_pressed ) {
       action_displaySettings();
     } break;
-
-    case UM_1_B ... UM_0_A: if ( event_pressed ) {
-      uint8_t kc;
-      if ( isShifted ){
-        switch (macro_id){
-          case UM_1_B: { kc = KC_B; } break;
-          case UM_2_C: { kc = KC_C; } break;
-          case UM_3_D: { kc = KC_D; } break;
-          case UM_4_E: { kc = KC_E; } break;
-          case UM_5_F: { kc = KC_F; } break;
-          case UM_0_A: { kc = KC_A; } break;
-          default:     { kc = KC_NO; } break;
-        }
-      }
-      else {
-        kc = KC_1 + (macro_id - UM_1_B);
-      }
-      register_code( kc );
-      unregister_code( kc );
-    } break;
   }
 
   dprintf( "return MACRO_NONE\n" );
@@ -403,7 +374,7 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 }
 
 static uint16_t
-getKeycode_atDefaultLayer( keyrecord_t *record )
+getKeycode_fromDefaultLayer( keyrecord_t *record )
 {
   uint32_t layer_state_mem = layer_state;
   layer_state = 0;
@@ -548,22 +519,23 @@ get_stMods( void )
                             .oneshot = get_oneshot_mods() };
 }
 
-static void 
+static mod_bits_t
+get_orMods( void )
+{
+  struct for_mods mods = get_stMods();
+  return (  mods.real
+            | mods.weak
+            | mods.macro
+            | mods.oneshot );
+}
+
+static void
 set_stMods( struct for_mods mods )
 {
   set_mods( mods.real );
   set_weak_mods( mods.weak );
   set_macro_mods( mods.macro );
   set_oneshot_mods( mods.oneshot );
-}
-
-static mod_bits_t 
-anyMods( struct for_mods mods )
-{
-  return (  mods.real 
-            | mods.weak 
-            | mods.macro 
-            | mods.oneshot );
 }
 
 static void 
