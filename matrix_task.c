@@ -92,24 +92,24 @@ struct for_keySeq2String {
   const char string[];
 };
 
-#define KC___   KC_NO
+#define KC__  KC_NO
 #define SEQ_STR_EVAL( macro )  \
-  macro( G,  A, __, __, __, "git add ."),         \
-  macro( G,  D, __, __, __, "git diff"),          \
-  macro( G,  D,  S, __, __, "git diff --staged"), \
-  macro( G,  L, __, __, __, "git log"),           \
-  macro( G,  L,  O, __, __, "git log --online"),  \
-  macro( G,  F, __, __, __, "git fetch"),         \
-  macro( G,  O, __, __, __, "git checkout"),      \
-  macro( G,  P, __, __, __, "git pull"),          \
-  macro( G,  S, __, __, __, "git status"),        \
-  macro( G,  C,  A, __, __, "git commit --amend"), \
-  macro( G,  C, __, __, __, "git commit -m ''"),  \
-  macro( R,  W, __, __, __, "<random word>" )
+  macro( G, A, _, _, _, "git add ."),           \
+  macro( G, D, _, _, _, "git diff"),            \
+  macro( G, D, S, _, _, "git diff --staged"),   \
+  macro( G, L, _, _, _, "git log"),             \
+  macro( G, L, O, _, _, "git log --online"),    \
+  macro( G, F, _, _, _, "git fetch"),           \
+  macro( G, O, _, _, _, "git checkout"),        \
+  macro( G, P, _, _, _, "git pull"),            \
+  macro( G, S, _, _, _, "git status"),          \
+  macro( G, C, A, _, _, "git commit --amend"),  \
+  macro( G, C, _, _, _, "git commit -m ''"),    \
+  macro( R, W, _, _, _, "<random word>" )
 #define INIT_KEYSEQ_ITEM( k1, k2, k3, k4, k5, str ) \
-  k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
+  KEYSEQ_##k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
 #define GET_KEYSEQ_PTR( k1, k2, k3, k4, k5, ... ) \
-  &k1##k2##k3##k4##k5
+  &KEYSEQ_##k1##k2##k3##k4##k5
 
 #define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
 #define RANDOM_WORD_LENGTH ( 8u )
@@ -139,13 +139,14 @@ void leader_end(void)
       pgm_read_word(it_ks+3),
       pgm_read_word(it_ks+4)
     ){
-      if ( seq_strings[i] == GET_KEYSEQ_PTR(G, C, __, __, __) ){
+      dprintf( "match read-word at %d\n", i );
+      if ( seq_strings[i] == GET_KEYSEQ_PTR(G, C, _, _, _) ){
         /* type "git commit -m ''" */
         send_string_P( it_str );
-        action_macro_play( MACRO( T(LEFT), END ));  /* move cursor into quotes */
+        action_macro_play( MACRO( T(LEFT), END ));  /* move cursor into single quotes */
       }
-      else if ( seq_strings[i] == GET_KEYSEQ_PTR(R, W, __, __, __) ){
-        /* type random word */
+      else if ( seq_strings[i] == GET_KEYSEQ_PTR(R, W, _, _, _) ){
+        /* type <random word> */
         for ( int i = RANDOM_WORD_LENGTH; i > 0; i-- ){
           tap_random_base64();
         }
