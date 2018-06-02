@@ -63,7 +63,7 @@ static void action_displaySettings( void );
 #define LAYER_NAMES_EVAL( func ) \
   func(QWERTY),     \
   func(DVORAK),     \
-  func(MOD_FN),     \
+  func(FN_KEYS),    \
   func(MOD_RSIDE),  \
   func(MOD_SANDS),  \
   func(EDIT_CRSR),  \
@@ -91,18 +91,18 @@ static const char* layerNameStr_P( enum keymap_layer layer );
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-# define MO_MF    ( MO(KL_(MOD_FN)) )
+# define MO_FN    ( MO(KL_(FN_KEYS)) )
 # define M_MHEN   ( MACROTAP(UM_SWITCH_EDIT_LAYER_WITH_KC) )  // switch layer when pressed, send KC_SECO when tapped
 # define M_HENK   ( MACROTAP(UM_SWITCH_INPUT_LAYER_WITH_KC) ) // switch layer when pressed, send KC_SINO when tapped
-  [KL_(QWERTY)] = KEYMAP_JP(
+  [KL_(QWERTY)] = LAYOUT_JP(
      KC_ESC,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_MINS,  KC_EQL, KC_JYEN, KC_BSPC,
      KC_TAB,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,     KC_I,    KC_O,    KC_P, KC_LBRC, KC_RBRC,
     KC_LCTL,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,     KC_K,    KC_L, KC_SCLN, KC_QUOT, KC_BSLS,  KC_ENT,
     KC_LSFT,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,  KC_COMM,  KC_DOT, KC_SLSH,   KC_RO,   KC_UP, KC_RSFT,
-      MO_MF, KC_ZKHK, KC_LGUI, KC_LALT,  M_MHEN,      KC_SPC     ,  M_HENK,  KC_KANA, KC_RALT,   MO_MF, KC_LEFT, KC_DOWN, KC_RGHT
+      MO_FN, KC_ZKHK, KC_LGUI, KC_LALT,  M_MHEN,      KC_SPC     ,  M_HENK,  KC_KANA, KC_RALT,   MO_FN, KC_LEFT, KC_DOWN, KC_RGHT
   ),
 
-  [KL_(DVORAK)] = KEYMAP_JP(
+  [KL_(DVORAK)] = LAYOUT_JP(
     _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_LBRC, KC_RBRC,  KC_GRV, _______,
     _______, KC_QUOT, KC_COMM,  KC_DOT,    KC_P,    KC_Y,    KC_F,    KC_G,     KC_C,    KC_R,    KC_L, KC_SLSH,  KC_EQL,
     _______,    KC_A,    KC_O,    KC_E,    KC_U,    KC_I,    KC_D,    KC_H,     KC_T,    KC_N,    KC_S, KC_MINS, _______, _______,
@@ -110,15 +110,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______,  _______, _______, _______, _______, _______, _______
   ),
 
-  [KL_(MOD_FN)] = KEYMAP_JP(
+  [KL_(FN_KEYS)] = LAYOUT_JP(
     KC_SLEP,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,  KC_INS,  KC_DEL,
-    KC_CAPS, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SLCK, KC_PAUS,   KC_UP, _______,
-    _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, _______, KC_PAST, KC_PSLS, KC_HOME, KC_PGUP, KC_LEFT, KC_RGHT, _______, KC_PENT,
-    _______, _______, _______, _______, _______, _______, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, _______, KC_RSFT, _______,
+    KC_CAPS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PSCR, KC_SLCK, KC_PAUS,   KC_UP, XXXXXXX,
+    _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, XXXXXXX, KC_PAST, KC_PSLS, KC_HOME, KC_PGUP, KC_LEFT, KC_RGHT, XXXXXXX, KC_PENT,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, XXXXXXX, KC_RSFT, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL
   ),
 
-  [KL_(MOD_RSIDE)] = KEYMAP_JP(
+  [KL_(MOD_RSIDE)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -128,7 +128,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 //# define M_SAS   ( MACROTAP(UM_SANDS) )
 # define M_SAS    ( MT(MOD_LSFT, KC_SPACE) )
-  [KL_(MOD_SANDS)] = KEYMAP_JP(
+  [KL_(MOD_SANDS)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -154,7 +154,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define OSM_ALT  ( OSM(MOD_LALT) )
 # define OSM_SFT  ( OSM(MOD_LSFT) )
 # define OSM_GUI  ( OSM(MOD_LGUI) )
-  [KL_(EDIT_CRSR)] = KEYMAP_JP(
+  [KL_(EDIT_CRSR)] = LAYOUT_JP(
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
     _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX, KC_REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
@@ -175,7 +175,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define S_RGHT   ( S(KC_RIGHT) )
 # define S_FDWD   ( S(LCTL(KC_RIGHT)) )
 # define M_SW     ( M(UM_SELECT_WORD) )
-  [KL_(EDIT_SLCT)] = KEYMAP_JP(
+  [KL_(EDIT_SLCT)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______,   S_TOP,  S_BTTM, _______, _______, _______,    M_SW,  S_HOME,   S_END, _______, _______, _______,
     _______,  S_PGUP,    S_UP,  S_DOWN,  S_PGDN, _______, _______,  S_BKWD,  S_LEFT,  S_RGHT,  S_FDWD, _______, _______, _______,
@@ -189,7 +189,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define KC_SLD   ( LCTL(KC_DOWN) )   // scroll line down
 # define KC_SPU   ( LALT(KC_PGUP) )   // scroll page up
 # define KC_SPD   ( LALT(KC_PGDOWN) ) // scroll page down
-  [KL_(EDIT_SCRL)] = KEYMAP_JP(
+  [KL_(EDIT_SCRL)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, KC_PRVS, KC_NEXT, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______,  KC_SPU,  KC_SLU,  KC_SLD,  KC_SPD, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -197,7 +197,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
-  [KL_(EDIT_MEDIA)] = KEYMAP_JP(
+  [KL_(EDIT_MEDIA)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, KC_MPRV, KC_MNXT, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, KC_MRWD, KC_MSTP, KC_MPLY, KC_MFFD, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -207,7 +207,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 # define M_PB     ( M(UM_INPUT_PAIRED_BRANKETS) )
 # define M_RAND   ( M(UM_TAP_RANDOM_BASE64) )
-  [KL_(INPUT)] = KEYMAP_JP(
+  [KL_(INPUT)] = LAYOUT_JP(
     _______, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB,    M_PB,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
     _______, XXXXXXX, XXXXXXX, XXXXXXX,  M_RAND, XXXXXXX, XXXXXXX, KC_LEAD, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
     _______,   KC_P1,   KC_P2,   KC_P3,   KC_P4,   KC_P5,   KC_P6,   KC_P7,   KC_P8,   KC_P9,   KC_P0,    M_PB, XXXXXXX, _______,
@@ -220,7 +220,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_TMA    ( M(UM_TOGGLE_MOD_ARROW) )
 # define M_TMS    ( M(UM_TOGGLE_MOD_SANDS) )
 # define M_DSST   ( M(UM_DISPLAY_SETTINGS) )
-  [KL_(STNG)] = KEYMAP_JP(
+  [KL_(STNG)] = LAYOUT_JP(
     XXXXXXX,   M_TPD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_CDL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX,  M_DSST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
