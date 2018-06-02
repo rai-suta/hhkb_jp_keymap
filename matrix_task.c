@@ -3,8 +3,9 @@
 #include "action_macro.h"
 #include <stdarg.h>
 
-LEADER_EXTERNS();
-extern bool matrix_key_count(void);  /* matrix.c */
+LEADER_EXTERNS();   // Leader key process variable declaration
+
+extern bool matrix_key_count(void);   /* matrix.c */
 static void cancel_capsLock(void);
 static void dprint_layer_state(void);
 static void dprint_mods(void);
@@ -87,11 +88,7 @@ static void cancel_capsLock(void)
 #endif
 }
 
-struct for_keySeq2String {
-  const uint16_t keyseq[5];
-  const char string[];
-};
-
+// Leader key settings
 #define KC__  KC_NO
 #define SEQ_STR_EVAL( macro )  \
   macro( G, A, _, _, _, "git add ."),           \
@@ -103,62 +100,69 @@ struct for_keySeq2String {
   macro( G, O, _, _, _, "git checkout"),        \
   macro( G, P, _, _, _, "git pull"),            \
   macro( G, S, _, _, _, "git status"),          \
-  macro( G, C, A, _, _, "git commit --amend"),  \
-  macro( G, C, _, _, _, "git commit -m ''"),    \
-  macro( R, W, _, _, _, "<random word>" )
+  macro( G, C, A, _, _, "git commit --amend")
 #define INIT_KEYSEQ_ITEM( k1, k2, k3, k4, k5, str ) \
   KEYSEQ_##k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
 #define GET_KEYSEQ_PTR( k1, k2, k3, k4, k5, ... ) \
   &KEYSEQ_##k1##k2##k3##k4##k5
 
+struct SendStringSetting {
+  const uint16_t keyseq[5];
+  const char string[];
+};
+static const struct SendStringSetting
+  SEQ_STR_EVAL( INIT_KEYSEQ_ITEM ),                                   /* setting item */
+  * const LEADER_KEY_SETTINGS[] = { SEQ_STR_EVAL( GET_KEYSEQ_PTR ) }; /* setting list */
+
 #define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
 #define RANDOM_WORD_LENGTH ( 8u )
 
+// Begin call back from process_leader
 void leader_start(void)
 {
   dprintf( "leader_start\n" );
   layer_clear();
 }
 
+// End call back from process_leader
 void leader_end(void)
 {
   dprintf( "leader_end\n" );
-  leading = false;
 
-  static const struct for_keySeq2String
-    SEQ_STR_EVAL( INIT_KEYSEQ_ITEM ),
-    * const seq_strings[] = { SEQ_STR_EVAL( GET_KEYSEQ_PTR ) };
+  for ( int i = 0; i < NUM_OF(LEADER_KEY_SETTINGS); i++ ) {
+    const uint16_t *it_keyseq  = LEADER_KEY_SETTINGS[i]->keyseq;
+    const char     *it_string  = LEADER_KEY_SETTINGS[i]->string;
 
-  for ( int i = 0; i < NUM_OF(seq_strings); i++ ) {
-    const uint16_t *it_ks  = seq_strings[i]->keyseq;
-    const char     *it_str = seq_strings[i]->string;
-    SEQ_FIVE_KEYS(
-      pgm_read_word(it_ks+0),
-      pgm_read_word(it_ks+1),
-      pgm_read_word(it_ks+2),
-      pgm_read_word(it_ks+3),
-      pgm_read_word(it_ks+4)
+    if ( leading ) SEQ_FIVE_KEYS(
+      pgm_read_word(it_keyseq+0),
+      pgm_read_word(it_keyseq+1),
+      pgm_read_word(it_keyseq+2),
+      pgm_read_word(it_keyseq+3),
+      pgm_read_word(it_keyseq+4)
     ){
-      dprintf( "match read-word at %d\n", i );
-      if ( seq_strings[i] == GET_KEYSEQ_PTR(G, C, _, _, _) ){
-        /* type "git commit -m ''" */
-        send_string_P( it_str );
-        action_macro_play( MACRO( T(LEFT), END ));  /* move cursor into single quotes */
-      }
-      else if ( seq_strings[i] == GET_KEYSEQ_PTR(R, W, _, _, _) ){
-        /* type <random word> */
-        for ( int i = RANDOM_WORD_LENGTH; i > 0; i-- ){
-          tap_random_base64();
-        }
-      }
-      else {
-        /* type seq-string */
-        send_string_P( it_str );
-      }
-
-      return;
+      // send string
+      send_string_P( it_string );
+      leading = false;
+      break;
     }
   }
+
+  if ( leading ) SEQ_TWO_KEYS(KC_G, KC_C) {
+    // type "git commit -m ''"
+    SEND_STRING( "git commit -m ''" );
+    action_macro_play( MACRO( T(LEFT), END ));  // move cursor into single quotes
+    leading = false;
+  }
+
+  if ( leading ) SEQ_TWO_KEYS(KC_R, KC_W) {
+    // type <random word>
+    for ( int i = RANDOM_WORD_LENGTH; i > 0; i-- ){
+      tap_random_base64();
+    }
+    leading = false;
+  }
+
+  leading = false;
 }
 
 #ifdef CONSOLE_ENABLE
