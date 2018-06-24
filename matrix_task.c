@@ -90,32 +90,9 @@ static void cancel_capsLock(void)
 
 // Leader key settings
 #define KC__  KC_NO
-#define SEQ_STR_EVAL( macro )  \
-  macro( G, A, _, _, _, "git add ."),           \
-  macro( G, D, _, _, _, "git diff"),            \
-  macro( G, D, S, _, _, "git diff --staged"),   \
-  macro( G, L, _, _, _, "git log"),             \
-  macro( G, L, O, _, _, "git log --online"),    \
-  macro( G, F, _, _, _, "git fetch"),           \
-  macro( G, O, _, _, _, "git checkout"),        \
-  macro( G, P, _, _, _, "git pull"),            \
-  macro( G, S, _, _, _, "git status"),          \
-  macro( G, C, A, _, _, "git commit --amend")
-#define INIT_KEYSEQ_ITEM( k1, k2, k3, k4, k5, str ) \
-  KEYSEQ_##k1##k2##k3##k4##k5 PROGMEM = { { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, str }
-#define GET_KEYSEQ_PTR( k1, k2, k3, k4, k5, ... ) \
-  &KEYSEQ_##k1##k2##k3##k4##k5
-
-struct SendStringSetting {
-  const uint16_t keyseq[5];
-  const char string[];
-};
-static const struct SendStringSetting
-  SEQ_STR_EVAL( INIT_KEYSEQ_ITEM ),                                   /* setting item */
-  * const LEADER_KEY_SETTINGS[] = { SEQ_STR_EVAL( GET_KEYSEQ_PTR ) }; /* setting list */
-
+#define COMB_KC_STR( k1, k2, k3, k4, k5, str ) \
+        { .keyseq = { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, .string = str }
 #define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
-#define RANDOM_WORD_LENGTH ( 8u )
 
 // Begin call back from process_leader
 void leader_start(void)
@@ -127,13 +104,43 @@ void leader_start(void)
 // End call back from process_leader
 void leader_end(void)
 {
+  static struct {
+    uint16_t keyseq[5];
+    char string[];
+  } const PROGMEM LEADER_KEY_SETTINGS[] = {
+    COMB_KC_STR( G, A, _, _, _, "git add ."),
+    COMB_KC_STR( G, D, _, _, _, "git diff"),
+    COMB_KC_STR( G, D, S, _, _, "git diff --staged"),
+    COMB_KC_STR( G, L, _, _, _, "git log"),
+    COMB_KC_STR( G, L, O, _, _, "git log --online"),
+    COMB_KC_STR( G, F, _, _, _, "git fetch"),
+    COMB_KC_STR( G, O, _, _, _, "git checkout"),
+    COMB_KC_STR( G, P, _, _, _, "git pull"),
+    COMB_KC_STR( G, S, _, _, _, "git status"),
+    COMB_KC_STR( G, C, A, _, _, "git commit --amend"),
+  };
+  const size_t NUM_OF_LEADER_KEY_SETTINGS = NUM_OF(LEADER_KEY_SETTINGS);
+  const int RANDOM_WORD_LENGTH = 8u;
+
   dprintf( "leader_end\n" );
+  leading = false;
 
-  for ( int i = 0; i < NUM_OF(LEADER_KEY_SETTINGS); i++ ) {
-    const uint16_t *it_keyseq  = LEADER_KEY_SETTINGS[i]->keyseq;
-    const char     *it_string  = LEADER_KEY_SETTINGS[i]->string;
+  SEQ_TWO_KEYS(KC_G, KC_C) {
+    // type "git commit -m ''"
+    SEND_STRING( "git commit -m ''" );
+    action_macro_play( MACRO( T(LEFT), END ));  // move cursor into single quotes
+  }
+  else SEQ_TWO_KEYS(KC_R, KC_W) {
+    // type <random word>
+    for ( int i = RANDOM_WORD_LENGTH; i > 0; i-- ){
+      tap_random_base64();
+    }
+  }
+  else for ( int i = 0; i < NUM_OF_LEADER_KEY_SETTINGS; i++ ) {
+    const uint16_t *it_keyseq  = LEADER_KEY_SETTINGS[i].keyseq;
+    const char     *it_string  = LEADER_KEY_SETTINGS[i].string;
 
-    if ( leading ) SEQ_FIVE_KEYS(
+    SEQ_FIVE_KEYS(
       pgm_read_word(it_keyseq+0),
       pgm_read_word(it_keyseq+1),
       pgm_read_word(it_keyseq+2),
@@ -142,27 +149,9 @@ void leader_end(void)
     ){
       // send string
       send_string_P( it_string );
-      leading = false;
       break;
     }
   }
-
-  if ( leading ) SEQ_TWO_KEYS(KC_G, KC_C) {
-    // type "git commit -m ''"
-    SEND_STRING( "git commit -m ''" );
-    action_macro_play( MACRO( T(LEFT), END ));  // move cursor into single quotes
-    leading = false;
-  }
-
-  if ( leading ) SEQ_TWO_KEYS(KC_R, KC_W) {
-    // type <random word>
-    for ( int i = RANDOM_WORD_LENGTH; i > 0; i-- ){
-      tap_random_base64();
-    }
-    leading = false;
-  }
-
-  leading = false;
 }
 
 #ifdef CONSOLE_ENABLE
