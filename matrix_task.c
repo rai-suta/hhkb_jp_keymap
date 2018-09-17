@@ -88,11 +88,26 @@ static void cancel_capsLock(void)
 #endif
 }
 
-// Leader key settings
+// Leader key strings
+#define APPLY_KEYSEQ_STRING( func ) \
+    func( G, A, _, _, _, "git add ."),          \
+    func( G, C, A, _, _, "git commit --amend"), \
+    func( G, D, _, _, _, "git diff"),           \
+    func( G, D, S, _, _, "git diff --staged"),  \
+    func( G, F, _, _, _, "git fetch"),          \
+    func( G, L, _, _, _, "git log"),            \
+    func( G, L, O, _, _, "git log --online"),   \
+    func( G, O, _, _, _, "git checkout"),       \
+    func( G, P, _, _, _, "git pull"),           \
+    func( G, S, _, _, _, "git status")
+#define INIT_PSTR( k1, k2, k3, k4, k5, str ) \
+    k1##k2##k3##k4##k5[] PROGMEM = str
+#define INIT_KEYSEQ( k1, k2, k3, k4, k5, str ) \
+    { .keyseq = { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, .string = k1##k2##k3##k4##k5 }
 #define KC__  KC_NO
-#define COMB_KC_STR( k1, k2, k3, k4, k5, str ) \
-        { .keyseq = { KC_##k1, KC_##k2, KC_##k3, KC_##k4, KC_##k5 }, .string = str }
-#define NUM_OF( x )   ( sizeof(x) / sizeof((x)[0]) )
+#define NUM_OF( x )   ( sizeof(x) / sizeof(*(x)) )
+
+const char* get_leader_string_P(void);
 
 // Begin call back from process_leader
 void leader_start(void)
@@ -104,22 +119,6 @@ void leader_start(void)
 // End call back from process_leader
 void leader_end(void)
 {
-  static struct {
-    uint16_t keyseq[5];
-    char string[];
-  } const PROGMEM LEADER_KEY_SETTINGS[] = {
-    COMB_KC_STR( G, A, _, _, _, "git add ."),
-    COMB_KC_STR( G, D, _, _, _, "git diff"),
-    COMB_KC_STR( G, D, S, _, _, "git diff --staged"),
-    COMB_KC_STR( G, L, _, _, _, "git log"),
-    COMB_KC_STR( G, L, O, _, _, "git log --online"),
-    COMB_KC_STR( G, F, _, _, _, "git fetch"),
-    COMB_KC_STR( G, O, _, _, _, "git checkout"),
-    COMB_KC_STR( G, P, _, _, _, "git pull"),
-    COMB_KC_STR( G, S, _, _, _, "git status"),
-    COMB_KC_STR( G, C, A, _, _, "git commit --amend"),
-  };
-  const size_t NUM_OF_LEADER_KEY_SETTINGS = NUM_OF(LEADER_KEY_SETTINGS);
   const int RANDOM_WORD_LENGTH = 8u;
 
   dprintf( "leader_end\n" );
@@ -136,22 +135,36 @@ void leader_end(void)
       tap_random_base64();
     }
   }
-  else for ( int i = 0; i < NUM_OF_LEADER_KEY_SETTINGS; i++ ) {
-    const uint16_t *it_keyseq  = LEADER_KEY_SETTINGS[i].keyseq;
-    const char     *it_string  = LEADER_KEY_SETTINGS[i].string;
-
-    SEQ_FIVE_KEYS(
-      pgm_read_word(it_keyseq+0),
-      pgm_read_word(it_keyseq+1),
-      pgm_read_word(it_keyseq+2),
-      pgm_read_word(it_keyseq+3),
-      pgm_read_word(it_keyseq+4)
-    ){
-      // send string
-      send_string_P( it_string );
-      break;
+  else {
+    const char* string = get_leader_string_P();
+    if (string != NULL) {
+      send_string_P( string );
     }
   }
+}
+
+const char* get_leader_string_P(void)
+{
+  static const char
+    APPLY_KEYSEQ_STRING( INIT_PSTR );
+
+  static struct {
+    uint16_t keyseq[5];
+    const char *string;
+  } const LEADER_KEY_SETTINGS[] = {
+    APPLY_KEYSEQ_STRING( INIT_KEYSEQ )
+  };
+
+  for (int i = 0; i < NUM_OF(LEADER_KEY_SETTINGS); i++) {
+    const uint16_t *it_keyseq  = LEADER_KEY_SETTINGS[i].keyseq;
+    SEQ_FIVE_KEYS( it_keyseq[0], it_keyseq[1], it_keyseq[2],
+                   it_keyseq[3], it_keyseq[4] )
+    {
+      return LEADER_KEY_SETTINGS[i].string;
+    }
+  }
+
+  return (const char*)NULL;
 }
 
 #ifdef CONSOLE_ENABLE
