@@ -42,6 +42,8 @@ enum user_macro{
   // UM_TURN_* is that goto layer when pressed, keep layer when release
   UM_TURN_EDIT_LAYER,
   UM_TURN_INPUT_LAYER,
+  // UM_MOMENTARY_* is that on layer when pressed
+  UM_MOMENTARY_LAYER_EDIT_SLCT,
   // UM_TOGGLE_* is that toggle default_layer
   UM_TOGGLE_PLN_DVORAK,
   UM_TOGGLE_MOD_ARROW,
@@ -149,7 +151,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define M_DBW    ( M(UM_DELETE_BACKWARD_WORD) )
 # define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
 # define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
-# define MO_EDSL  ( MO(KL_(EDIT_SLCT)) )   // NOTE: MO() can switch in the shortest time
+# define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
 # define OSM_CTL  ( OSM(MOD_LCTL) )
 # define OSM_ALT  ( OSM(MOD_LALT) )
 # define OSM_SFT  ( OSM(MOD_LSFT) )
@@ -322,6 +324,10 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 
     case UM_TURN_INPUT_LAYER: if ( event_pressed ) {
       /* do nothing */
+    } break;
+
+    case UM_MOMENTARY_LAYER_EDIT_SLCT: if ( event_pressed ) {
+      layer_on(KL_(EDIT_SLCT));
     } break;
 
     case UM_SELECT_WORD: {
