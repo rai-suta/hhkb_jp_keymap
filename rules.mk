@@ -1,5 +1,5 @@
 # Build Options
-#   change to "no" to disable the options, or define them in the Makefile in 
+#   change to "no" to disable the options, or define them in the Makefile in
 #   the appropriate keymap folder that will get included automatically
 #
 OPT_DEFS += -DHHKB_JP -DJIS_KEYCODE
@@ -13,3 +13,4 @@ EXTRAKEY_ENABLE   = yes   # Audio control and System control(+450)
 CONSOLE_ENABLE    = yes   # Console for debug(+400)
 COMMAND_ENABLE    = yes   # Commands for debug and configuration
 CUSTOM_MATRIX     = yes   # Custom matrix file for the HHKB
+LEADER_ENABLE     = yes   # Leader key
