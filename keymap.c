@@ -48,8 +48,6 @@ enum user_macro{
   UM_TOGGLE_PLN_DVORAK,
   UM_TOGGLE_MOD_ARROW,
   UM_TOGGLE_MOD_SANDS,
-  UM_DELETE_FORWARD_WORD,
-  UM_DELETE_BACKWARD_WORD,
   UM_SELECT_WORD,
   UM_INPUT_PAIRED_BRANKETS,
   UM_CLEAR_DEFAULT_LAYER,
@@ -68,7 +66,12 @@ enum custom_keycodes {
   COPY,
   PASTE,
   REDO,
+  DELETE_FORWARD_WORD,
+  DELETE_BACKWARD_WORD,
 };
+
+#define DEL_FW    DELETE_FORWARD_WORD
+#define DEL_BW    DELETE_BACKWARD_WORD
 
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
@@ -151,8 +154,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define KC_BTTM  ( LCTL(KC_END) )    // move to bottom
 # define KC_MBW   ( LCTL(KC_LEFT) )   // move to backward-word
 # define KC_MFW   ( LCTL(KC_RGHT) )   // move to forward-word
-# define M_DFW    ( M(UM_DELETE_FORWARD_WORD) )
-# define M_DBW    ( M(UM_DELETE_BACKWARD_WORD) )
 # define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
 # define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
 # define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
@@ -164,7 +165,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
     _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX,    REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
-    OSM_SFT,    UNDO,     CUT,    COPY,   PASTE, XXXXXXX, XXXXXXX,  KC_ENT,   M_DBW,   M_DFW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
+    OSM_SFT,    UNDO,     CUT,    COPY,   PASTE, XXXXXXX, XXXXXXX,  KC_ENT,  DEL_BW,  DEL_FW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
     _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
   ),
 
@@ -272,20 +273,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
            , opt );
 
   switch (macro_id) {
-    case UM_DELETE_FORWARD_WORD: {
-      return MACRODOWN( D(LCTL),
-                          D(LSFT), T(RGHT),  U(LSFT),
-                          T(X),
-                          U(LCTL), END );
-    } break;
-
-    case UM_DELETE_BACKWARD_WORD: {
-      return MACRODOWN( D(LCTL),
-                          D(LSFT), T(LEFT),  U(LSFT),
-                          T(X),
-                          U(LCTL), END );
-    } break;
-
     case UM_SANDS: {
       return MACRO_HOLDMOD_TAPKC( record, MOD_BIT(KC_LSHIFT), KC_SPACE );
     } break;
@@ -398,6 +385,8 @@ static void process_cut(void);
 static void process_copy(void);
 static void process_paste(void);
 static void process_redo(void);
+static void process_delete_forward_word(void);
+static void process_delete_backward_word(void);
 static void store_mods(void);
 static void restore_mods(void);
 
@@ -427,6 +416,16 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
 
     case REDO: IF_PRESSED {
       process_redo();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case DELETE_FORWARD_WORD: IF_PRESSED {
+      process_delete_forward_word();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case DELETE_BACKWARD_WORD: IF_PRESSED {
+      process_delete_backward_word();
       return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
   }
@@ -490,6 +489,36 @@ process_redo(void)
   register_code(KC_LCTL);
   tap_code(KC_Y);
   unregister_code(KC_LCTL);
+
+  restore_mods();
+}
+
+static void
+process_delete_forward_word(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  register_code(KC_LSFT);
+  tap_code(KC_RGHT);
+  unregister_code(KC_LSFT);
+  unregister_code(KC_LCTL);
+  tap_code(KC_DEL);
+
+  restore_mods();
+}
+
+static void
+process_delete_backward_word(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  register_code(KC_LSFT);
+  tap_code(KC_LEFT);
+  unregister_code(KC_LSFT);
+  unregister_code(KC_LCTL);
+  tap_code(KC_DEL);
 
   restore_mods();
 }
