@@ -73,6 +73,26 @@ enum custom_keycodes {
 #define DEL_FW    DELETE_FORWARD_WORD
 #define DEL_BW    DELETE_BACKWARD_WORD
 
+#define C_HOME    C(KC_HOME)    // move to top
+#define C_END     C(KC_END)     // move to bottom
+#define C_LEFT    C(KC_LEFT)    // move to backward-word
+#define C_RGHT    C(KC_RGHT)    // move to forward-word
+#define A_LEFT    A(KC_LEFT)    // previous location
+#define A_RIGHT   A(KC_RIGHT)   // next location
+#define SCRL_UP   C(KC_UP)      // scroll line up
+#define SCRL_DN   C(KC_DOWN)    // scroll line down
+#define SCRL_PU   A(KC_PGUP)    // scroll page up
+#define SCRL_PD   A(KC_PGDOWN)  // scroll page down
+
+# define OSM_CTL  ( OSM(MOD_LCTL) )
+# define OSM_ALT  ( OSM(MOD_LALT) )
+# define OSM_SFT  ( OSM(MOD_LSFT) )
+# define OSM_GUI  ( OSM(MOD_LGUI) )
+
+# define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
+# define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
+# define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
+
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
   func(QWERTY),     \
@@ -150,21 +170,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,       M_SAS     , _______, _______, _______, _______, _______, _______, _______
   ),
 
-# define KC_TOP   ( LCTL(KC_HOME) )   // move to top
-# define KC_BTTM  ( LCTL(KC_END) )    // move to bottom
-# define KC_MBW   ( LCTL(KC_LEFT) )   // move to backward-word
-# define KC_MFW   ( LCTL(KC_RGHT) )   // move to forward-word
-# define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
-# define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
-# define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
-# define OSM_CTL  ( OSM(MOD_LCTL) )
-# define OSM_ALT  ( OSM(MOD_LALT) )
-# define OSM_SFT  ( OSM(MOD_LSFT) )
-# define OSM_GUI  ( OSM(MOD_LGUI) )
   [KL_(EDIT_CRSR)] = LAYOUT_JP(
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX,    REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
-    OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
+    _______,  KC_ESC,  C_HOME,   C_END,   M_TEL, XXXXXXX,    REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
+    OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  C_LEFT, KC_LEFT, KC_RGHT,  C_RGHT, XXXXXXX, XXXXXXX, _______,
     OSM_SFT,    UNDO,     CUT,    COPY,   PASTE, XXXXXXX, XXXXXXX,  KC_ENT,  DEL_BW,  DEL_FW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
     _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
   ),
