@@ -34,7 +34,6 @@
 //    M(...)
 enum user_macro{
   UM_NOTHING = 0,
-  UM_SANDS,
   // UM_SWITCH_* is that goto layer when pressed, return layer when release
   UM_SWITCH_EDIT_LAYER_WITH_KC,
   UM_SWITCH_INPUT_LAYER_WITH_KC,
@@ -43,7 +42,6 @@ enum user_macro{
   UM_TOGGLE_PLN_DVORAK,
   UM_TOGGLE_MOD_ARROW,
   UM_TOGGLE_MOD_SANDS,
-  UM_SELECT_WORD,
   UM_INPUT_PAIRED_BRANKETS,
   UM_CLEAR_DEFAULT_LAYER,
   UM_DISPLAY_SETTINGS,
@@ -175,7 +173,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL
   ),
 
-//# define M_SAS   ( MACROTAP(UM_SANDS) )
 # define M_SAS    ( MT(MOD_LSFT, KC_SPACE) )
   [KL_(MOD_SANDS)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -277,10 +274,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
            , opt );
 
   switch (macro_id) {
-    case UM_SANDS: {
-      return MACRO_HOLDMOD_TAPKC( record, MOD_BIT(KC_LSHIFT), KC_SPACE );
-    } break;
-
     case UM_SWITCH_EDIT_LAYER_WITH_KC: {
       return MACRO_TAP_HOLD( record,
                 /*press*/     ( layer_on(KL_(EDIT_CRSR)),       MACRO_NONE ),
@@ -303,13 +296,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       else {
         layer_move( KL_(STNG) );
       }
-    } break;
-
-    case UM_SELECT_WORD: {
-      return MACRODOWN( D(LCTL),
-                          T(RGHT),
-                          D(LSFT), T(LEFT), U(LSFT),
-                          U(LCTL), END );
     } break;
 
     case UM_INPUT_PAIRED_BRANKETS: {
