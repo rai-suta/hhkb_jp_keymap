@@ -167,8 +167,7 @@ const char* get_leader_string_P(void)
   return (const char*)NULL;
 }
 
-#ifdef CONSOLE_ENABLE
-
+__attribute__ ((weak))
 static void dprint_layer_state(void)
 {
   static uint32_t last_state;
@@ -191,6 +190,7 @@ struct for_mods {
                             && x.macro == y.macro \
                             && x.oneshot == y.oneshot )
 
+__attribute__ ((weak))
 static void dprint_mods(void)
 {
   static struct for_mods last_mods;
@@ -206,5 +206,3 @@ static void dprint_mods(void)
     last_mods = mods;
   }
 }
-
-#endif /* CONSOLE_ENABLE */
