@@ -167,8 +167,6 @@ const char* get_leader_string_P(void)
   return (const char*)NULL;
 }
 
-#ifdef CONSOLE_ENABLE
-
 static void dprint_layer_state(void)
 {
   static uint32_t last_state;
@@ -206,5 +204,3 @@ static void dprint_mods(void)
     last_mods = mods;
   }
 }
-
-#endif /* CONSOLE_ENABLE */
