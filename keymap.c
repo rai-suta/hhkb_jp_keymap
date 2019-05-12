@@ -70,9 +70,24 @@ enum custom_keycodes {
   DELETE_BACKWARD_WORD,
 };
 
+enum tap_dance_code {
+  TC_SELECT,
+};
+
+// custom keycode
 #define DEL_FW    DELETE_FORWARD_WORD
 #define DEL_BW    DELETE_BACKWARD_WORD
 
+// tap dance
+#ifdef TAP_DANCE_ENABLE
+  #define TD_SLCT   TD(TC_SELECT)
+  #define TAP_DANCE_MOD_SFT   MOD_BIT(KC_RSFT)
+#else
+  #define TD_SLCT   XXXXXXX
+  #define TAP_DANCE_MOD_SFT   0
+#endif
+
+// modified keycode
 #define C_HOME    C(KC_HOME)    // move to top
 #define C_END     C(KC_END)     // move to bottom
 #define C_LEFT    C(KC_LEFT)    // move to backward-word
@@ -84,14 +99,20 @@ enum custom_keycodes {
 #define SCRL_PU   A(KC_PGUP)    // scroll page up
 #define SCRL_PD   A(KC_PGDOWN)  // scroll page down
 
-# define OSM_CTL  ( OSM(MOD_LCTL) )
-# define OSM_ALT  ( OSM(MOD_LALT) )
-# define OSM_SFT  ( OSM(MOD_LSFT) )
-# define OSM_GUI  ( OSM(MOD_LGUI) )
+// modifier keycode
+#define OSM_CTL  OSM(MOD_LCTL)
+#define OSM_ALT  OSM(MOD_LALT)
+#define OSM_SFT  OSM(MOD_LSFT)
+#define OSM_GUI  OSM(MOD_LGUI)
 
-# define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
-# define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
-# define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
+// switching and toggling layers
+#define MO_LOWER  MO(KL_EDIT_CRSR)
+#define MO_RAISE  MO(KL_INPUT)
+
+// user macro
+#define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
+#define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
+#define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
 
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
@@ -172,10 +193,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [KL_(EDIT_CRSR)] = LAYOUT_JP(
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______,  KC_ESC,  C_HOME,   C_END,   M_TEL, XXXXXXX,    REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
+    _______,  KC_ESC,  C_HOME,   C_END,   M_TEL, XXXXXXX,    REDO, TD_SLCT, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  C_LEFT, KC_LEFT, KC_RGHT,  C_RGHT, XXXXXXX, XXXXXXX, _______,
     OSM_SFT,    UNDO,     CUT,    COPY,   PASTE, XXXXXXX, XXXXXXX,  KC_ENT,  DEL_BW,  DEL_FW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
-    _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
+    _______, _______, OSM_GUI, OSM_ALT, _______,     _______     , _______, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
   ),
 
 # define S_TOP    ( S(LCTL(KC_HOME)) )
@@ -223,7 +244,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, XXXXXXX, XXXXXXX, KC_LEAD,  M_RAND, XXXXXXX, XXXXXXX, KC_NMLC, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
     _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12, _______,
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
-    _______, _______, _______, _______,   M_SSL,     _______     , _______, _______, _______, _______, _______, _______, _______
+    _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
 # define M_CDL    ( M(UM_CLEAR_DEFAULT_LAYER) )
@@ -240,6 +261,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
 };
+
+uint32_t layer_state_set_user(uint32_t state)
+{
+  del_mods(TAP_DANCE_MOD_SFT);
+  state = update_tri_layer_state(state, KL_(EDIT_CRSR), KL_(INPUT), KL_(STNG));
+  return state;
+}
 
 const uint16_t PROGMEM fn_actions[] = {
 };
@@ -435,6 +463,39 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
 
   return PROCESS_USUAL_BEHAVIOR;
 }
+
+// rules.mk: TAP_DANCE_ENABLE = yes
+#ifdef TAP_DANCE_ENABLE
+void tap_dance_select(qk_tap_dance_state_t *state, void *user_data);
+qk_tap_dance_action_t tap_dance_actions[] =  {
+  [TC_SELECT] = ACTION_TAP_DANCE_FN(tap_dance_select),
+};
+
+void tap_dance_select(qk_tap_dance_state_t *state, void *user_data)
+{
+  if (state->count == 1) {
+    // switch shift mod
+    if (get_mods() & TAP_DANCE_MOD_SFT) {
+      del_mods(TAP_DANCE_MOD_SFT);
+    }
+    else {
+      add_mods(TAP_DANCE_MOD_SFT);
+    }
+  }
+  else if (state->count == 2) {
+    // select word
+    register_code(KC_LCTL);
+    tap_code(KC_RIGHT);
+    register_code(KC_LSFT);
+    tap_code(KC_LEFT);
+    unregister_code(KC_LSFT);
+    unregister_code(KC_LCTL);
+  }
+  else {
+    // ignore
+  }
+}
+#endif // TAP_DANCE_ENABLE
 
 static void
 process_undo(void)
