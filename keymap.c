@@ -39,11 +39,6 @@ enum user_macro{
   UM_SWITCH_EDIT_LAYER_WITH_KC,
   UM_SWITCH_INPUT_LAYER_WITH_KC,
   UM_SWITCH_STNG_LAYER,
-  // UM_TURN_* is that goto layer when pressed, keep layer when release
-  UM_TURN_EDIT_LAYER,
-  UM_TURN_INPUT_LAYER,
-  // UM_MOMENTARY_* is that on layer when pressed
-  UM_MOMENTARY_LAYER_EDIT_SLCT,
   // UM_TOGGLE_* is that toggle default_layer
   UM_TOGGLE_PLN_DVORAK,
   UM_TOGGLE_MOD_ARROW,
@@ -68,6 +63,7 @@ enum custom_keycodes {
   REDO,
   DELETE_FORWARD_WORD,
   DELETE_BACKWARD_WORD,
+  SWITCH_EDIT_LAYER,
 };
 
 enum tap_dance_code {
@@ -77,6 +73,7 @@ enum tap_dance_code {
 // custom keycode
 #define DEL_FW    DELETE_FORWARD_WORD
 #define DEL_BW    DELETE_BACKWARD_WORD
+#define SW_EDIT   SWITCH_EDIT_LAYER
 
 // tap dance
 #ifdef TAP_DANCE_ENABLE
@@ -112,7 +109,6 @@ enum tap_dance_code {
 // user macro
 #define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
 #define M_SSL    ( M(UM_SWITCH_STNG_LAYER) )
-#define MO_EDSL  ( M(UM_MOMENTARY_LAYER_EDIT_SLCT) )
 
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
@@ -122,7 +118,6 @@ enum tap_dance_code {
   func(MOD_RSIDE),  \
   func(MOD_SANDS),  \
   func(EDIT_CRSR),  \
-  func(EDIT_SLCT),  \
   func(EDIT_SCRL),  \
   func(EDIT_MEDIA), \
   func(INPUT),      \
@@ -136,7 +131,6 @@ enum keymap_layer{
   KL_NUM
 };
 #define LAYER_MASK_OF_EDIT          ( 1UL << KL_(EDIT_CRSR)   \
-                                      | 1UL << KL_(EDIT_SLCT) \
                                       | 1UL << KL_(EDIT_SCRL) \
                                       | 1UL << KL_(EDIT_MEDIA) )
 #define LAYER_MASK_OF_INPUT         ( 1UL << KL_(INPUT) )
@@ -193,31 +187,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [KL_(EDIT_CRSR)] = LAYOUT_JP(
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______,  KC_ESC,  C_HOME,   C_END,   M_TEL, XXXXXXX,    REDO, TD_SLCT, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
+    _______,  KC_ESC,  C_HOME,   C_END, SW_EDIT, XXXXXXX,    REDO, TD_SLCT, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  C_LEFT, KC_LEFT, KC_RGHT,  C_RGHT, XXXXXXX, XXXXXXX, _______,
     OSM_SFT,    UNDO,     CUT,    COPY,   PASTE, XXXXXXX, XXXXXXX,  KC_ENT,  DEL_BW,  DEL_FW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
     _______, _______, OSM_GUI, OSM_ALT, _______,     _______     , _______, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
-  ),
-
-# define S_TOP    ( S(LCTL(KC_HOME)) )
-# define S_BTTM   ( S(LCTL(KC_END)) )
-# define S_PGUP   ( S(KC_PGUP) )
-# define S_UP     ( S(KC_UP) )
-# define S_DOWN   ( S(KC_DOWN) )
-# define S_PGDN   ( S(KC_PGDOWN) )
-# define S_HOME   ( S(KC_HOME) )
-# define S_END    ( S(KC_END) )
-# define S_BKWD   ( S(LCTL(KC_LEFT)) )
-# define S_LEFT   ( S(KC_LEFT) )
-# define S_RGHT   ( S(KC_RIGHT) )
-# define S_FDWD   ( S(LCTL(KC_RIGHT)) )
-# define M_SW     ( M(UM_SELECT_WORD) )
-  [KL_(EDIT_SLCT)] = LAYOUT_JP(
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______,   S_TOP,  S_BTTM, _______, _______, _______,    M_SW,  S_HOME,   S_END, _______, _______, _______,
-    _______,  S_PGUP,    S_UP,  S_DOWN,  S_PGDN, _______, _______,  S_BKWD,  S_LEFT,  S_RGHT,  S_FDWD, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
   [KL_(EDIT_SCRL)] = LAYOUT_JP(
@@ -332,26 +305,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
       }
     } break;
 
-    case UM_TURN_EDIT_LAYER: if ( event_pressed ) {
-      enum keymap_layer current_layer = biton32( layer_state );
-      layer_move( KL_(EDIT_CRSR) );
-      switch (current_layer){
-        case KL_(EDIT_CRSR):  layer_on( KL_(EDIT_SCRL) );   break;
-        case KL_(EDIT_SLCT):  layer_on( KL_(EDIT_SCRL) );   break;
-        case KL_(EDIT_SCRL):  layer_on( KL_(EDIT_MEDIA) );  break;
-        case KL_(EDIT_MEDIA): layer_on( KL_(EDIT_SCRL) );   break;
-        default: break;
-      }
-    } break;
-
-    case UM_TURN_INPUT_LAYER: if ( event_pressed ) {
-      /* do nothing */
-    } break;
-
-    case UM_MOMENTARY_LAYER_EDIT_SLCT: if ( event_pressed ) {
-      layer_on(KL_(EDIT_SLCT));
-    } break;
-
     case UM_SELECT_WORD: {
       return MACRODOWN( D(LCTL),
                           T(RGHT),
@@ -418,6 +371,7 @@ static void process_paste(void);
 static void process_redo(void);
 static void process_delete_forward_word(void);
 static void process_delete_backward_word(void);
+static void process_SWITCH_EDIT_LAYER(void);
 static void store_mods(void);
 static void restore_mods(void);
 
@@ -458,6 +412,10 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
     case DELETE_BACKWARD_WORD: IF_PRESSED {
       process_delete_backward_word();
       return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case SWITCH_EDIT_LAYER: IF_PRESSED {
+      process_SWITCH_EDIT_LAYER();
     } break;
   }
 
@@ -585,6 +543,19 @@ process_delete_backward_word(void)
   tap_code(KC_DEL);
 
   restore_mods();
+}
+
+static void
+process_SWITCH_EDIT_LAYER(void)
+{
+  enum keymap_layer top_layer = biton32(layer_state);
+  layer_move( KL_(EDIT_CRSR) );
+  switch (top_layer){
+    case KL_EDIT_CRSR:  layer_on(KL_EDIT_SCRL);   break;
+    case KL_EDIT_SCRL:  layer_on(KL_EDIT_MEDIA);  break;
+    case KL_EDIT_MEDIA: layer_on(KL_EDIT_SCRL);   break;
+    default: break;
+  }
 }
 
 static uint8_t stored_mods;
