@@ -61,6 +61,15 @@ enum user_macro{
 #define KC_SINO  ( KC_HENK )    // input key when UM_SWITCH_INPUT_LAYER_WITH_KC is tapped
 static void action_displaySettings( void );
 
+enum custom_keycodes {
+  CUSTOM_KEYCODE = SAFE_RANGE,
+  UNDO,
+  CUT,
+  COPY,
+  PASTE,
+  REDO,
+};
+
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
   func(QWERTY),     \
@@ -142,11 +151,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define KC_BTTM  ( LCTL(KC_END) )    // move to bottom
 # define KC_MBW   ( LCTL(KC_LEFT) )   // move to backward-word
 # define KC_MFW   ( LCTL(KC_RGHT) )   // move to forward-word
-# define KC_UNDO  ( LCTL(KC_Z) )
-# define KC_CUT   ( LCTL(KC_X) )
-# define KC_COPY  ( LCTL(KC_C) )
-# define KC_PST   ( LCTL(KC_V) )
-# define KC_REDO  ( LCTL(KC_Y) )
 # define M_DFW    ( M(UM_DELETE_FORWARD_WORD) )
 # define M_DBW    ( M(UM_DELETE_BACKWARD_WORD) )
 # define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
@@ -158,9 +162,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 # define OSM_GUI  ( OSM(MOD_LGUI) )
   [KL_(EDIT_CRSR)] = LAYOUT_JP(
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX, KC_REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
+    _______,  KC_ESC,  KC_TOP, KC_BTTM,   M_TEL, XXXXXXX,    REDO, MO_EDSL, KC_HOME,  KC_END, XXXXXXX, XXXXXXX, XXXXXXX,
     OSM_CTL, KC_PGUP,   KC_UP, KC_DOWN, KC_PGDN,  KC_DEL, KC_BSPC,  KC_MBW, KC_LEFT, KC_RGHT,  KC_MFW, XXXXXXX, XXXXXXX, _______,
-    OSM_SFT, KC_UNDO,  KC_CUT, KC_COPY,  KC_PST, XXXXXXX, XXXXXXX,  KC_ENT,   M_DBW,   M_DFW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
+    OSM_SFT,    UNDO,     CUT,    COPY,   PASTE, XXXXXXX, XXXXXXX,  KC_ENT,   M_DBW,   M_DFW, XXXXXXX, XXXXXXX, OSM_SFT, OSM_SFT,
     _______, _______, OSM_GUI, OSM_ALT, _______,     _______     ,   M_SSL, _______, OSM_ALT, _______, _______, OSM_GUI, OSM_CTL
   ),
 
@@ -384,6 +388,122 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 
   dprintf( "return MACRO_NONE\n" );
   return MACRO_NONE;
+}
+
+#define PROCESS_OVERRIDE_BEHAVIOR   false
+#define PROCESS_USUAL_BEHAVIOR      true
+#define IF_PRESSED                  if (record->event.pressed)
+static void process_undo(void);
+static void process_cut(void);
+static void process_copy(void);
+static void process_paste(void);
+static void process_redo(void);
+static void store_mods(void);
+static void restore_mods(void);
+
+bool
+process_record_user(uint16_t keycode, keyrecord_t *record)
+{
+  switch (keycode) {
+    case UNDO: IF_PRESSED {
+      process_undo();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case CUT: IF_PRESSED {
+      process_cut();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case COPY: IF_PRESSED {
+      process_copy();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case PASTE: IF_PRESSED {
+      process_paste();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case REDO: IF_PRESSED {
+      process_redo();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+  }
+
+  return PROCESS_USUAL_BEHAVIOR;
+}
+
+static void
+process_undo(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  tap_code(KC_Z);
+  unregister_code(KC_LCTL);
+
+  restore_mods();
+}
+
+static void
+process_cut(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  tap_code(KC_X);
+  unregister_code(KC_LCTL);
+
+  restore_mods();
+}
+
+static void
+process_copy(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  tap_code(KC_C);
+  unregister_code(KC_LCTL);
+
+  restore_mods();
+}
+
+static void
+process_paste(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  tap_code(KC_V);
+  unregister_code(KC_LCTL);
+
+  restore_mods();
+}
+
+static void
+process_redo(void)
+{
+  store_mods();
+
+  register_code(KC_LCTL);
+  tap_code(KC_Y);
+  unregister_code(KC_LCTL);
+
+  restore_mods();
+}
+
+static uint8_t stored_mods;
+static void store_mods(void)
+{
+  stored_mods = get_mods();
+  clear_mods();
+}
+
+static void restore_mods(void)
+{
+  set_mods(stored_mods);
 }
 
 static uint16_t
