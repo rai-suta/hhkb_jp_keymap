@@ -14,3 +14,4 @@ CONSOLE_ENABLE    = yes   # Console for debug(+400)
 COMMAND_ENABLE    = yes   # Commands for debug and configuration
 CUSTOM_MATRIX     = yes   # Custom matrix file for the HHKB
 LEADER_ENABLE     = yes   # Leader key
+TAP_DANCE_ENABLE  = yes   # Tap dance
