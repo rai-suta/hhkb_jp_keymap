@@ -35,7 +35,6 @@
 enum user_macro{
   UM_NOTHING = 0,
   // UM_TOGGLE_* is that toggle default_layer
-  UM_INPUT_PAIRED_BRANKETS,
   UM_CLEAR_DEFAULT_LAYER,
   UM_DISPLAY_SETTINGS,
   UM_TAP_RANDOM_BASE64,
@@ -59,6 +58,7 @@ enum custom_keycodes {
   SWITCH_EDIT_LAYER,
   TOGGLE_MOD_RSIDE,
   TOGGLE_MOD_SANDS,
+  INPUT_PAIRED_BRANKETS,
 };
 
 enum tap_dance_code {
@@ -73,6 +73,7 @@ enum tap_dance_code {
 #define SW_EDIT   SWITCH_EDIT_LAYER
 #define TO_ARRO   TOGGLE_MOD_RSIDE
 #define TO_SANDS  TOGGLE_MOD_SANDS
+#define INP_BRKS  INPUT_PAIRED_BRANKETS
 
 // tap dance
 #ifdef TAP_DANCE_ENABLE
@@ -203,14 +204,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
-# define M_PB     ( M(UM_INPUT_PAIRED_BRANKETS) )
 # define M_RAND   ( M(UM_TAP_RANDOM_BASE64) )
 # define KC_NMLC  ( KC_NUMLOCK )
   [KL_(INPUT)] = LAYOUT_JP(
-    _______, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB,    M_PB,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______, XXXXXXX, XXXXXXX, KC_LEAD,  M_RAND, XXXXXXX, XXXXXXX, KC_NMLC, KC_PSCR, KC_SLCK, KC_PAUS,    M_PB,    M_PB,
+    _______, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    _______, XXXXXXX, XXXXXXX, KC_LEAD,  M_RAND, XXXXXXX, XXXXXXX, KC_NMLC, KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX,INP_BRKS,
     _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12, _______,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    M_PB, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
@@ -244,18 +244,14 @@ struct for_mods {
 static const mod_bits_t SHIFT_MOD_BITS = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
 static struct for_mods get_stMods( void );
 static mod_bits_t get_orMods( void );
-static void set_stMods( struct for_mods mods );
-static void clear_allMods( void );
 
 // subroutine of action_get_macro
-static const macro_t* getMacro_pairedBrankets( keyrecord_t *record, uint16_t keycode, bool isShifted );
 static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
 
 const macro_t*
 action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 {
   const bool event_pressed = record->event.pressed;
-  const bool isShifted = !!( get_orMods() & SHIFT_MOD_BITS );
 
   dprintf( "\n==== action_get_macro ====\n"
            "record   = { %u, %u, %u }\n"
@@ -268,22 +264,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
            , opt );
 
   switch (macro_id) {
-    case UM_INPUT_PAIRED_BRANKETS: {
-      // evacuate or restoration mods
-      static struct for_mods evacuatedMods;
-      if ( event_pressed ) {
-        evacuatedMods = get_stMods();
-        clear_allMods();
-      }
-      else {
-        set_stMods( evacuatedMods );
-      }
-      send_keyboard_report();
-
-      uint16_t keycode = getKeycode_fromDefaultLayer( record );
-      return getMacro_pairedBrankets( record, keycode, isShifted );
-    } break;
-
     case UM_CLEAR_DEFAULT_LAYER: if ( event_pressed ) {
       default_layer_set( 0 );
       eeconfig_update_default_layer( default_layer_state );
@@ -315,6 +295,7 @@ static void process_delete_backward_word(void);
 static void process_TOGGLE_EDIT_LAYER(bool is_pressed, bool is_tapped);
 static void process_TOGGLE_INPUT_LAYER(bool is_pressed, bool is_tapped);
 static void process_SWITCH_EDIT_LAYER(void);
+static void process_INPUT_PAIRED_BRANKETS(keyrecord_t *record);
 static void store_mods(void);
 static void restore_mods(void);
 
@@ -364,24 +345,34 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
 
     case TOGGLE_EDIT_LAYER: {
       process_TOGGLE_EDIT_LAYER(record->event.pressed, is_tapped);
+      return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
 
     case TOGGLE_INPUT_LAYER: {
       process_TOGGLE_INPUT_LAYER(record->event.pressed, is_tapped);
+      return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
 
     case SWITCH_EDIT_LAYER: IF_PRESSED {
       process_SWITCH_EDIT_LAYER();
+      return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
 
     case TOGGLE_MOD_RSIDE: IF_PRESSED {
       toggle_default_layer( KL_(MOD_RSIDE) );
       eeconfig_update_default_layer( default_layer_state );
+      return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
 
     case TOGGLE_MOD_SANDS: IF_PRESSED {
       toggle_default_layer( KL_(MOD_SANDS) );
       eeconfig_update_default_layer( default_layer_state );
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case INPUT_PAIRED_BRANKETS: IF_PRESSED {
+      process_INPUT_PAIRED_BRANKETS( record );
+      return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
   }
 
@@ -552,6 +543,40 @@ process_SWITCH_EDIT_LAYER(void)
   }
 }
 
+static void
+process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
+{
+  uint16_t keycode = getKeycode_fromDefaultLayer( record );
+  bool shiftmod = !!( get_orMods() & SHIFT_MOD_BITS );
+
+  switch (keycode) {
+    case KP__L_RBRACKET: {
+      SEND_STRING("()"SS_TAP(X_LEFT));
+    } break;
+
+    case KP_L_BRACKET_S: {
+      if (shiftmod) {
+        SEND_STRING("{}"SS_TAP(X_LEFT));
+      }
+      else {
+        SEND_STRING("[]"SS_TAP(X_LEFT));
+      }
+    } break;
+
+    case KP__L_ABRANKETS: {
+      SEND_STRING("<>"SS_TAP(X_LEFT));
+    } break;
+
+    case KP__SGLQUOTE: {
+      SEND_STRING("''"SS_TAP(X_LEFT));
+    } break;
+
+    case KP__DBLQUOTE: {
+      SEND_STRING("\"\""SS_TAP(X_LEFT));
+    } break;
+  }
+}
+
 static uint8_t stored_mods;
 static void store_mods(void)
 {
@@ -574,91 +599,6 @@ getKeycode_fromDefaultLayer( keyrecord_t *record )
   layer_state = layer_state_mem;
 
   return keycode;
-}
-
-// Estimate brackets type frome current event.key
-static const macro_t*
-getMacro_pairedBrankets( keyrecord_t *record, uint16_t keycode, bool isShifted )
-{
-  // Select macro sequence.
-  switch ( keycode ){
-#   ifdef KP_L_BRACKET_S
-    case KP_L_BRACKET_S: {
-      if ( isShifted ){
-        return MACRODOWN( D(LSFT),
-                            TYPE(KP_L_BRACKET_S),
-                            TYPE(KP_R_BRACKET_S),
-                            U(LSFT),
-                          T(LEFT), END );
-      }
-      else {
-        return MACRODOWN( TYPE(KP_L_BRACKET_S),
-                          TYPE(KP_R_BRACKET_S),
-                          T(LEFT), END );
-      }
-    } break;
-#   endif
-
-#   ifdef KP__L_RBRACKET
-    case KP__L_RBRACKET: {
-      return MACRODOWN( D(LSFT),
-                          TYPE(KP__L_RBRACKET),
-                          TYPE(KP__R_RBRACKET),
-                          U(LSFT),
-                        T(LEFT), END );
-    } break;
-#   endif
-
-#   ifdef KP__L_ABRANKETS
-    case KP__L_ABRANKETS: {
-      return MACRODOWN( D(LSFT),
-                          TYPE(KP__L_ABRANKETS),
-                          TYPE(KP__R_ABRANKETS),
-                          U(LSFT),
-                        T(LEFT), END );
-    } break;
-#   endif
-
-#   ifdef KP__SGLQUOTE
-    case KP__SGLQUOTE: {
-      return MACRODOWN( D(LSFT),
-                          TYPE(KP__SGLQUOTE),
-                          TYPE(KP__SGLQUOTE),
-                          U(LSFT),
-                        T(LEFT), END );
-    } break;
-#   endif
-
-#   ifdef KP_SGLQUOTE_S
-    case KP_SGLQUOTE_S: {
-      if ( isShifted ){
-        return MACRODOWN( D(LSFT),
-                            TYPE(KP_SGLQUOTE_S),
-                            TYPE(KP_SGLQUOTE_S),
-                            U(LSFT),
-                          T(LEFT), END );
-      }
-      else {
-        return MACRODOWN( TYPE(KP_SGLQUOTE_S),
-                          TYPE(KP_SGLQUOTE_S),
-                          T(LEFT), END );
-      }
-
-    } break;
-#   endif
-
-#   ifdef KP__DBLQUOTE
-    case KP__DBLQUOTE: {
-      return MACRODOWN( D(LSFT),
-                          TYPE(KP__DBLQUOTE),
-                          TYPE(KP__DBLQUOTE),
-                          U(LSFT),
-                        T(LEFT), END );
-    } break;
-#   endif
-  }
-
-  return MACRO_NONE;
 }
 
 static void
@@ -718,22 +658,4 @@ get_orMods( void )
             | mods.weak
             | mods.macro
             | mods.oneshot );
-}
-
-static void
-set_stMods( struct for_mods mods )
-{
-  set_mods( mods.real );
-  set_weak_mods( mods.weak );
-  set_macro_mods( mods.macro );
-  set_oneshot_mods( mods.oneshot );
-}
-
-static void
-clear_allMods( void )
-{
-  clear_mods();
-  clear_weak_mods();
-  clear_macro_mods();
-  clear_oneshot_mods();
 }
