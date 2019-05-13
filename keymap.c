@@ -59,6 +59,9 @@ enum custom_keycodes {
   TOGGLE_MOD_RSIDE,
   TOGGLE_MOD_SANDS,
   INPUT_PAIRED_BRANKETS,
+  CLEAR_DEFAULT_LAYER,
+  DISPLAY_SETTINGS,
+  TAP_RANDOM_BASE64,
 };
 
 enum tap_dance_code {
@@ -74,6 +77,9 @@ enum tap_dance_code {
 #define TO_ARRO   TOGGLE_MOD_RSIDE
 #define TO_SANDS  TOGGLE_MOD_SANDS
 #define INP_BRKS  INPUT_PAIRED_BRANKETS
+#define CLR_DLYR  CLEAR_DEFAULT_LAYER
+#define DSP_STT   DISPLAY_SETTINGS
+#define TAP_RND   TAP_RANDOM_BASE64
 
 // tap dance
 #ifdef TAP_DANCE_ENABLE
@@ -95,6 +101,7 @@ enum tap_dance_code {
 #define SCRL_DN   C(KC_DOWN)    // scroll line down
 #define SCRL_PU   A(KC_PGUP)    // scroll page up
 #define SCRL_PD   A(KC_PGDOWN)  // scroll page down
+#define SANDS     MT(MOD_LSFT, KC_SPACE)
 
 // modifier keycode
 #define OSM_CTL  OSM(MOD_LCTL)
@@ -171,13 +178,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL
   ),
 
-# define M_SAS    ( MT(MOD_LSFT, KC_SPACE) )
   [KL_(MOD_SANDS)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______,       M_SAS     , _______, _______, _______, _______, _______, _______, _______
+    _______, _______, _______, _______, _______,       SANDS     , _______, _______, _______, _______, _______, _______, _______
   ),
 
   [KL_(EDIT)] = LAYOUT_JP(
@@ -204,22 +210,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
-# define M_RAND   ( M(UM_TAP_RANDOM_BASE64) )
-# define KC_NMLC  ( KC_NUMLOCK )
   [KL_(INPUT)] = LAYOUT_JP(
     _______, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______, XXXXXXX, XXXXXXX, KC_LEAD,  M_RAND, XXXXXXX, XXXXXXX, KC_NMLC, KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX,INP_BRKS,
+    _______, XXXXXXX, XXXXXXX, KC_LEAD, TAP_RND, XXXXXXX, XXXXXXX, KC_NLCK, KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX,INP_BRKS,
     _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12, _______,
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
-# define M_CDL    ( M(UM_CLEAR_DEFAULT_LAYER) )
-# define M_DSST   ( M(UM_DISPLAY_SETTINGS) )
   [KL_(STNG)] = LAYOUT_JP(
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_CDL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,CLR_DLYR, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX,  M_DSST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, DSP_STT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,     TO_SANDS    , _______, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, TO_ARRO, TO_ARRO
   ),
@@ -233,54 +235,12 @@ uint32_t layer_state_set_user(uint32_t state)
   return state;
 }
 
-const uint16_t PROGMEM fn_actions[] = {
-};
-
 // Modifier utility
 typedef uint8_t mod_bits_t;
-struct for_mods {
-  mod_bits_t real, weak, macro, oneshot;
-};
 static const mod_bits_t SHIFT_MOD_BITS = MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT);
-static struct for_mods get_stMods( void );
-static mod_bits_t get_orMods( void );
 
 // subroutine of action_get_macro
 static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
-
-const macro_t*
-action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
-{
-  const bool event_pressed = record->event.pressed;
-
-  dprintf( "\n==== action_get_macro ====\n"
-           "record   = { %u, %u, %u }\n"
-           "macro_id = %u\n"
-           "opt      = %u\n"
-           , record->event.pressed
-           , record->tap.count
-           , record->tap.interrupted  // set from ACTION_MACRO_TAP, MACROTAP
-           , macro_id
-           , opt );
-
-  switch (macro_id) {
-    case UM_CLEAR_DEFAULT_LAYER: if ( event_pressed ) {
-      default_layer_set( 0 );
-      eeconfig_update_default_layer( default_layer_state );
-    } break;
-
-    case UM_DISPLAY_SETTINGS: if ( event_pressed ) {
-      action_displaySettings();
-    } break;
-
-    case UM_TAP_RANDOM_BASE64: if ( event_pressed ){
-      tap_random_base64();
-    } break;
-  }
-
-  dprintf( "return MACRO_NONE\n" );
-  return MACRO_NONE;
-}
 
 #define PROCESS_OVERRIDE_BEHAVIOR   false
 #define PROCESS_USUAL_BEHAVIOR      true
@@ -373,6 +333,19 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
     case INPUT_PAIRED_BRANKETS: IF_PRESSED {
       process_INPUT_PAIRED_BRANKETS( record );
       return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case CLEAR_DEFAULT_LAYER: IF_PRESSED {
+      default_layer_set(0);
+      eeconfig_update_default_layer( default_layer_state );
+    } break;
+
+    case DISPLAY_SETTINGS: IF_PRESSED {
+      action_displaySettings();
+    } break;
+
+    case TAP_RANDOM_BASE64: IF_PRESSED {
+      tap_random_base64();
     } break;
   }
 
@@ -547,7 +520,7 @@ static void
 process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
 {
   uint16_t keycode = getKeycode_fromDefaultLayer( record );
-  bool shiftmod = !!( get_orMods() & SHIFT_MOD_BITS );
+  bool shiftmod = !!( get_mods() & SHIFT_MOD_BITS );
 
   switch (keycode) {
     case KP__L_RBRACKET: {
@@ -639,23 +612,4 @@ layerNameStr_P( enum keymap_layer layer )
     * const layer_names_lut[KL_NUM] = { LAYER_NAMES_EVAL( SET_LAYER_NAMES_LUT_ITEM ) };
 
   return (layer_names_lut[layer]);
-}
-
-static struct for_mods
-get_stMods( void )
-{
-  return (struct for_mods){ .real = get_mods(),
-                            .weak = get_weak_mods(),
-                            .macro = get_macro_mods(),
-                            .oneshot = get_oneshot_mods() };
-}
-
-static mod_bits_t
-get_orMods( void )
-{
-  struct for_mods mods = get_stMods();
-  return (  mods.real
-            | mods.weak
-            | mods.macro
-            | mods.oneshot );
 }
