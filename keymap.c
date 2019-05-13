@@ -35,9 +35,6 @@
 enum user_macro{
   UM_NOTHING = 0,
   // UM_TOGGLE_* is that toggle default_layer
-  UM_TOGGLE_PLN_DVORAK,
-  UM_TOGGLE_MOD_ARROW,
-  UM_TOGGLE_MOD_SANDS,
   UM_INPUT_PAIRED_BRANKETS,
   UM_CLEAR_DEFAULT_LAYER,
   UM_DISPLAY_SETTINGS,
@@ -60,6 +57,8 @@ enum custom_keycodes {
   TOGGLE_EDIT_LAYER,
   TOGGLE_INPUT_LAYER,
   SWITCH_EDIT_LAYER,
+  TOGGLE_MOD_RSIDE,
+  TOGGLE_MOD_SANDS,
 };
 
 enum tap_dance_code {
@@ -72,6 +71,8 @@ enum tap_dance_code {
 #define TO_EDIT   TOGGLE_EDIT_LAYER
 #define TO_INPT   TOGGLE_INPUT_LAYER
 #define SW_EDIT   SWITCH_EDIT_LAYER
+#define TO_ARRO   TOGGLE_MOD_RSIDE
+#define TO_SANDS  TOGGLE_MOD_SANDS
 
 // tap dance
 #ifdef TAP_DANCE_ENABLE
@@ -214,16 +215,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
 # define M_CDL    ( M(UM_CLEAR_DEFAULT_LAYER) )
-# define M_TPD    ( M(UM_TOGGLE_PLN_DVORAK) )
-# define M_TMA    ( M(UM_TOGGLE_MOD_ARROW) )
-# define M_TMS    ( M(UM_TOGGLE_MOD_SANDS) )
 # define M_DSST   ( M(UM_DISPLAY_SETTINGS) )
   [KL_(STNG)] = LAYOUT_JP(
-    XXXXXXX,   M_TPD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_CDL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_CDL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX,  M_DSST, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,       M_TMS     , _______, XXXXXXX, XXXXXXX, XXXXXXX,   M_TMA,   M_TMA,   M_TMA
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,     TO_SANDS    , _______, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, TO_ARRO, TO_ARRO
   ),
 
 };
@@ -288,21 +286,6 @@ action_get_macro(keyrecord_t *record, uint8_t macro_id, uint8_t opt)
 
     case UM_CLEAR_DEFAULT_LAYER: if ( event_pressed ) {
       default_layer_set( 0 );
-      eeconfig_update_default_layer( default_layer_state );
-    } break;
-
-    case UM_TOGGLE_PLN_DVORAK: if ( event_pressed ) {
-      toggle_default_layer( KL_(DVORAK) );
-      eeconfig_update_default_layer( default_layer_state );
-    } break;
-
-    case UM_TOGGLE_MOD_SANDS: if ( event_pressed ) {
-      toggle_default_layer( KL_(MOD_SANDS) );
-      eeconfig_update_default_layer( default_layer_state );
-    } break;
-
-    case UM_TOGGLE_MOD_ARROW: if ( event_pressed ) {
-      toggle_default_layer( KL_(MOD_RSIDE) );
       eeconfig_update_default_layer( default_layer_state );
     } break;
 
@@ -389,6 +372,16 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
 
     case SWITCH_EDIT_LAYER: IF_PRESSED {
       process_SWITCH_EDIT_LAYER();
+    } break;
+
+    case TOGGLE_MOD_RSIDE: IF_PRESSED {
+      toggle_default_layer( KL_(MOD_RSIDE) );
+      eeconfig_update_default_layer( default_layer_state );
+    } break;
+
+    case TOGGLE_MOD_SANDS: IF_PRESSED {
+      toggle_default_layer( KL_(MOD_SANDS) );
+      eeconfig_update_default_layer( default_layer_state );
     } break;
   }
 
