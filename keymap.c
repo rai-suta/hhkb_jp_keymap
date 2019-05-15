@@ -26,22 +26,6 @@
 # define KP_SGLQUOTE_S          ( KC_QUOT )     // ' (")
 #endif
 
-// Fn keys definition.
-//    fn_actions[FN2IDX(...)]
-#define FN2IDX( x )             ( x - KC_FN0 )
-
-// User macro identifer
-//    M(...)
-enum user_macro{
-  UM_NOTHING = 0,
-  // UM_TOGGLE_* is that toggle default_layer
-  UM_CLEAR_DEFAULT_LAYER,
-  UM_DISPLAY_SETTINGS,
-  UM_TAP_RANDOM_BASE64,
-};
-#define UM( id )  ( M(UM_##id) )
-#define KC_SECO  ( KC_MHEN )    // input key when UM_SWITCH_EDIT_LAYER_WITH_KC is tapped
-#define KC_SINO  ( KC_HENK )    // input key when UM_SWITCH_INPUT_LAYER_WITH_KC is tapped
 static void action_displaySettings( void );
 
 enum custom_keycodes {
@@ -113,9 +97,6 @@ enum tap_dance_code {
 #define MO_LOWER  MO(KL_EDIT)
 #define MO_RAISE  MO(KL_INPUT)
 
-// user macro
-#define M_TEL    ( M(UM_TURN_EDIT_LAYER) )
-
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
   func(QWERTY),     \
@@ -123,7 +104,7 @@ enum tap_dance_code {
   func(FN_KEYS),    \
   func(MOD_RSIDE),  \
   func(MOD_SANDS),  \
-  func(EDIT),  \
+  func(EDIT),       \
   func(EDIT_SCRL),  \
   func(EDIT_MEDIA), \
   func(INPUT),      \
