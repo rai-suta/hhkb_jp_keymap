@@ -37,6 +37,7 @@ enum custom_keycodes {
   REDO,
   DELETE_FORWARD_WORD,
   DELETE_BACKWARD_WORD,
+  TOGGLE_US_LIKE,
   TOGGLE_EDIT_LAYER,
   TOGGLE_INPUT_LAYER,
   SWITCH_EDIT_LAYER,
@@ -55,6 +56,7 @@ enum tap_dance_code {
 // custom keycode
 #define DEL_FW    DELETE_FORWARD_WORD
 #define DEL_BW    DELETE_BACKWARD_WORD
+#define TO_USLK   TOGGLE_US_LIKE
 #define TO_EDIT   TOGGLE_EDIT_LAYER
 #define TO_INPT   TOGGLE_INPUT_LAYER
 #define SW_EDIT   SWITCH_EDIT_LAYER
@@ -101,6 +103,7 @@ enum tap_dance_code {
 #define LAYER_NAMES_EVAL( func ) \
   func(QWERTY),     \
   func(DVORAK),     \
+  func(US_LIKE),    \
   func(FN_KEYS),    \
   func(MOD_RSIDE),  \
   func(MOD_SANDS),  \
@@ -141,6 +144,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______,    KC_A,    KC_O,    KC_E,    KC_U,    KC_I,    KC_D,    KC_H,     KC_T,    KC_N,    KC_S, KC_MINS, _______, _______,
     _______, KC_SCLN,    KC_Q,    KC_J,    KC_K,    KC_X,    KC_B,    KC_M,     KC_W,    KC_V,    KC_Z, KC_JYEN, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______,  _______, _______, _______, _______, _______, _______
+  ),
+
+  [KL_(US_LIKE)] = LAYOUT_JP(
+     KC_ESC, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_MINS,  KC_EQL, KC_BSPC,  KC_DEL,
+     KC_TAB, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_LBRC, KC_RBRC,
+    KC_LCTL, _______, _______, _______, _______, _______, _______, _______, _______, _______,  KC_SCLN, KC_QUOT,  KC_GRV,  KC_ENT,
+    KC_LSFT, _______, _______, _______, _______, _______, _______, _______,  KC_COMM,  KC_DOT, KC_SLSH, KC_BSLS, _______, KC_RSFT,
+    _______, _______, KC_LGUI, KC_LALT, _______,     _______     , _______,  KC_RALT, KC_RGUI, _______, _______, _______, _______
   ),
 
   [KL_(FN_KEYS)] = LAYOUT_JP(
@@ -201,7 +212,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [KL_(STNG)] = LAYOUT_JP(
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,CLR_DLYR, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_USLK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, DSP_STT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,     TO_SANDS    , _______, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, TO_ARRO, TO_ARRO
@@ -281,6 +292,12 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
 
     case DELETE_BACKWARD_WORD: IF_PRESSED {
       process_delete_backward_word();
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case TOGGLE_US_LIKE: IF_PRESSED {
+      toggle_default_layer( KL_(US_LIKE) );
+      eeconfig_update_default_layer( default_layer_state );
       return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
 
