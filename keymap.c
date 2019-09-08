@@ -671,6 +671,18 @@ action_displaySettings( void )
       }
     }
   }
+
+  // Led status
+  SEND_STRING("Led status:\n");
+  if (IS_HOST_LED_ON(USB_LED_NUM_LOCK)) {
+    SEND_STRING("  NUM_LOCK\n");
+  }
+  if (IS_HOST_LED_ON(USB_LED_CAPS_LOCK)) {
+    SEND_STRING("  CAPS_LOCK\n");
+  }
+  if (IS_HOST_LED_ON(USB_LED_SCROLL_LOCK)) {
+    SEND_STRING("  SCROLL_LOCK\n");
+  }
 }
 
 static void
