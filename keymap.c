@@ -1,7 +1,7 @@
 #include "hhkb.h"
 #include "config.h"
 #include "action_macro.h"
-#include "sendstring_jis.h"
+//#include "sendstring_jis.h"
 
 // Key position per keyboard layout
 #ifdef JIS_KEYCODE
@@ -194,9 +194,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [KL_(INPUT)] = LAYOUT_JP(
-    _______, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______, XXXXXXX, XXXXXXX, KC_LEAD, TAP_RND, XXXXXXX, XXXXXXX, KC_NLCK, KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX,INP_BRKS,
-    _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12, _______,
+    _______, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS,INP_BRKS,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    _______, XXXXXXX, XXXXXXX, KC_LEAD, TAP_RND, XXXXXXX, XXXXXXX, KC_NLCK, KC_PSCR, KC_SLCK, KC_PAUS,INP_BRKS,INP_BRKS,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS,INP_BRKS, _______,
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,INP_BRKS, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,
     _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
@@ -510,32 +510,120 @@ process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
 {
   uint16_t keycode = getKeycode_fromDefaultLayer( record );
   bool shiftmod = !!( get_mods() & SHIFT_MOD_BITS );
+  bool isolayout = layer_state_cmp(default_layer_state, KL_(US_LIKE));
 
-  switch (keycode) {
-    case KP__L_RBRACKET: {
-      SEND_STRING("()"SS_TAP(X_LEFT));
-    } break;
+  if (isolayout) {
+    switch (keycode) {
+      case KC_9: {
+        register_code(KC_LSFT);
+        tap_code(KC_9);
+        tap_code(KC_0);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
 
-    case KP_L_BRACKET_S: {
-      if (shiftmod) {
-        SEND_STRING("{}"SS_TAP(X_LEFT));
-      }
-      else {
-        SEND_STRING("[]"SS_TAP(X_LEFT));
-      }
-    } break;
+      case KC_LBRACKET: {
+        if (shiftmod) {
+          register_code(KC_LSFT);
+          tap_code(KC_LBRACKET);
+          tap_code(KC_RBRACKET);
+          unregister_code(KC_LSFT);
+          tap_code(KC_LEFT);
+        }
+        else {
+          tap_code(KC_LBRACKET);
+          tap_code(KC_RBRACKET);
+          tap_code(KC_LEFT);
+        }
+      } break;
 
-    case KP__L_ABRANKETS: {
-      SEND_STRING("<>"SS_TAP(X_LEFT));
-    } break;
+      case KC_COMMA: {
+        register_code(KC_LSFT);
+        tap_code(KC_COMMA);
+        tap_code(KC_DOT);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
 
-    case KP__SGLQUOTE: {
-      SEND_STRING("''"SS_TAP(X_LEFT));
-    } break;
+      case KC_QUOT: {
+        if (shiftmod) {
+          register_code(KC_LSFT);
+          tap_code(KC_QUOT);
+          tap_code(KC_QUOT);
+          unregister_code(KC_LSFT);
+          tap_code(KC_LEFT);
+        }
+        else {
+          tap_code(KC_QUOT);
+          tap_code(KC_QUOT);
+          tap_code(KC_LEFT);
+        }
+      } break;
 
-    case KP__DBLQUOTE: {
-      SEND_STRING("\"\""SS_TAP(X_LEFT));
-    } break;
+      case KC_GRV: {
+        tap_code(KC_GRV);
+        tap_code(KC_GRV);
+        tap_code(KC_LEFT);
+      } break;
+    }
+  }
+  else {
+    switch (keycode) {
+      case KC_8: {
+        register_code(KC_LSFT);
+        tap_code(KC_8);
+        tap_code(KC_9);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
+
+      case KC_RBRACKET: {
+        if (shiftmod) {
+          register_code(KC_LSFT);
+          tap_code(KC_RBRACKET);
+          tap_code(KC_BSLS);
+          unregister_code(KC_LSFT);
+          tap_code(KC_LEFT);
+        }
+        else {
+          tap_code(KC_RBRACKET);
+          tap_code(KC_BSLS);
+          tap_code(KC_LEFT);
+        }
+      } break;
+
+      case KC_COMMA: {
+        register_code(KC_LSFT);
+        tap_code(KC_COMMA);
+        tap_code(KC_DOT);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
+
+      case KC_7: {
+        register_code(KC_LSFT);
+        tap_code(KC_7);
+        tap_code(KC_7);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
+
+      case KC_2: {
+        register_code(KC_LSFT);
+        tap_code(KC_2);
+        tap_code(KC_2);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
+
+      case KC_LBRC: {
+        register_code(KC_LSFT);
+        tap_code(KC_LBRC);
+        tap_code(KC_LBRC);
+        unregister_code(KC_LSFT);
+        tap_code(KC_LEFT);
+      } break;
+    }
   }
 }
 
