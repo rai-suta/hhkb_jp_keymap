@@ -6,7 +6,6 @@
 LEADER_EXTERNS();   // Leader key process variable declaration
 
 extern bool matrix_key_count(void);   /* matrix.c */
-static void cancel_capsLock(void);
 static void dprint_layer_state(void);
 static void dprint_mods(void);
 
@@ -25,10 +24,6 @@ void matrix_scan_user(void)
   if ( mem_keyboardLeds != keyboardLeds ){
     dprintf( "keyboardLeds = %08b\n", keyboardLeds );
     mem_keyboardLeds = keyboardLeds;
-  }
-
-  if ( keyboardLeds & (1u << USB_LED_CAPS_LOCK) ){
-    cancel_capsLock();
   }
 
   static bool led_kana = false;
@@ -51,41 +46,6 @@ void matrix_scan_user(void)
     dprint_layer_state();
     dprint_mods();
   }
-}
-
-#ifdef JIS_KEYCODE
-# define TAP_CAPSLOCK() action_macro_play( MACRO( D(LSFT), T(CAPSLOCK), U(LSFT), END ))
-#else
-# define TAP_CAPSLOCK() action_macro_play( MACRO( T(CAPSLOCK), END ))
-#endif
-
-// Turn off CapsLock when CANCEL_CAPSLOCK_KEY_POSITIONS are typed.
-static void cancel_capsLock(void)
-{
-#ifdef CANCEL_CAPSLOCK_KEY_POSITIONS
-  static keypos_t const keypos_toCancelCapslock[] = CANCEL_CAPSLOCK_KEY_POSITIONS;
-  static size_t const ktcc_length = sizeof( keypos_toCancelCapslock ) / sizeof( keypos_t );
-
-  // if layer_state is switching then, process break.
-  if ( layer_state > default_layer_state ){
-    return;
-  }
-
-  // if shift-key being pressed then, process break.
-  bool isShiftOn = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
-  if ( isShiftOn ){
-    return;
-  }
-
-  for ( int i = 0; i < ktcc_length; i++ ){
-    keypos_t it_kp = keypos_toCancelCapslock[i];
-    if ( matrix_is_on( it_kp.row, it_kp.col ) ){
-      TAP_CAPSLOCK();
-      dprintf("Cancel CapsLock\n");
-      break;
-    }
-  }
-#endif
 }
 
 // Leader key strings

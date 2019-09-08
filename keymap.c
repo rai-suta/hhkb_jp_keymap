@@ -1,32 +1,9 @@
 #include "hhkb.h"
 #include "config.h"
 #include "action_macro.h"
-//#include "sendstring_jis.h"
-
-// Key position per keyboard layout
 #ifdef JIS_KEYCODE
-  // JIS keyboard layout
-# define KP_L_BRACKET_S         ( KC_RBRACKET ) // [ ({)
-# define KP_R_BRACKET_S         ( KC_BSLASH )   // ] (})
-# define KP__L_RBRACKET         ( KC_8 )        // unshifted (
-# define KP__R_RBRACKET         ( KC_9 )        // unshifted )
-# define KP__L_ABRANKETS        ( KC_COMMA )    // unshifted <
-# define KP__R_ABRANKETS        ( KC_DOT )      // unshifted >
-# define KP__SGLQUOTE           ( KC_7 )        // unshifted '
-# define KP__DBLQUOTE           ( KC_2 )        // unshifted "
+ #include "sendstring_jis.h"
 #endif
-#ifdef ISO_KEYCODE
-  // ISO keyboard layout
-# define KP_L_BRACKET_S         ( KC_LBRACKET ) // [ ({)
-# define KP_R_BRACKET_S         ( KC_RBRACKET ) // ] (})
-# define KP__L_RBRACKET         ( KC_9 )        // unshifted (
-# define KP__R_RBRACKET         ( KC_0 )        // unshifted )
-# define KP__L_ABRANKETS        ( KC_COMMA )    // unshifted <
-# define KP__R_ABRANKETS        ( KC_DOT )      // unshifted >
-# define KP_SGLQUOTE_S          ( KC_QUOT )     // ' (")
-#endif
-
-static void action_displaySettings( void );
 
 enum custom_keycodes {
   CUSTOM_KEYCODE = SAFE_RANGE,
@@ -101,11 +78,13 @@ enum tap_dance_code {
 
 // keymap layer names
 #define LAYER_NAMES_EVAL( func ) \
+  /* default_layer_state */ \
   func(QWERTY),     \
   func(US_LIKE),    \
-  func(FN_KEYS),    \
   func(MOD_RSIDE),  \
   func(MOD_SANDS),  \
+  /* layer_state */ \
+  func(FN_KEYS),    \
   func(EDIT),       \
   func(EDIT_SCRL),  \
   func(EDIT_MEDIA), \
@@ -145,14 +124,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, KC_LGUI, KC_LALT, _______,     _______     , _______, KC_RALT, KC_RGUI, _______, _______, _______, _______
   ),
 
-  [KL_(FN_KEYS)] = LAYOUT_JP(
-    KC_SLEP,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,  KC_INS,  KC_DEL,
-    KC_CAPS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PSCR, KC_SLCK, KC_PAUS,   KC_UP, XXXXXXX,
-    _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, XXXXXXX, KC_PAST, KC_PSLS, KC_HOME, KC_PGUP, KC_LEFT, KC_RGHT, XXXXXXX, KC_PENT,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, XXXXXXX, KC_RSFT, _______,
-    _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL
-  ),
-
   [KL_(MOD_RSIDE)] = LAYOUT_JP(
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -167,6 +138,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______, _______, _______, _______, _______,       SANDS     , _______, _______, _______, _______, _______, _______, _______
+  ),
+
+  [KL_(FN_KEYS)] = LAYOUT_JP(
+    KC_SLEP,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,  KC_INS,  KC_DEL,
+    KC_CAPS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PSCR, KC_SLCK, KC_PAUS,   KC_UP, XXXXXXX,
+    _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, XXXXXXX, KC_PAST, KC_PSLS, KC_HOME, KC_PGUP, KC_LEFT, KC_RGHT, XXXXXXX, KC_PENT,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, XXXXXXX, KC_RSFT, _______,
+    _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL
   ),
 
   [KL_(EDIT)] = LAYOUT_JP(
@@ -228,6 +207,7 @@ static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
 #define PROCESS_OVERRIDE_BEHAVIOR   false
 #define PROCESS_USUAL_BEHAVIOR      true
 #define IF_PRESSED                  if (record->event.pressed)
+static void cancel_capsLock(uint16_t keycode);
 static void process_undo(void);
 static void process_cut(void);
 static void process_copy(void);
@@ -239,6 +219,7 @@ static void process_TOGGLE_EDIT_LAYER(bool is_pressed, bool is_tapped);
 static void process_TOGGLE_INPUT_LAYER(bool is_pressed, bool is_tapped);
 static void process_SWITCH_EDIT_LAYER(void);
 static void process_INPUT_PAIRED_BRANKETS(keyrecord_t *record);
+static void action_displaySettings( void );
 static void store_mods(void);
 static void restore_mods(void);
 
@@ -249,6 +230,8 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
   uint16_t prev_keycode = mem_keycode;
   bool is_tapped = ((!record->event.pressed) && (keycode == prev_keycode));
   mem_keycode = keycode;
+
+  cancel_capsLock(keycode);
 
   switch (keycode) {
     case UNDO: IF_PRESSED {
@@ -373,6 +356,41 @@ void tap_dance_select(qk_tap_dance_state_t *state, void *user_data)
   }
 }
 #endif // TAP_DANCE_ENABLE
+
+// Turn off CapsLock when it be typed space character.
+static void
+cancel_capsLock(uint16_t keycode)
+{
+  if (!IS_HOST_LED_ON(USB_LED_CAPS_LOCK)){
+    return;
+  }
+
+  // if layer_state is switching then, process break.
+  if ( layer_state > default_layer_state ){
+    return;
+  }
+
+  // if shift-key being pressed then, process break.
+  bool isShiftOn = get_mods() & (MOD_BIT(KC_LSFT) | MOD_BIT(KC_RSFT));
+  if ( isShiftOn ){
+    return;
+  }
+
+  switch(keycode){
+    case KC_ENTER:
+    case KC_TAB:
+    case KC_SPACE:
+      dprintf("Cancel CapsLock\n");
+#ifdef JIS_KEYCODE
+      register_mods(MOD_MASK_SHIFT);
+      tap_code(KC_CAPS);
+      unregister_mods(MOD_MASK_SHIFT);
+#else
+      tap_code(KC_CAPS);
+#endif
+      break;
+  }
+}
 
 static void
 process_undo(void)
