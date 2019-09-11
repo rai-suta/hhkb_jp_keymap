@@ -380,6 +380,7 @@ cancel_capsLock(uint16_t keycode)
     case KC_ENTER:
     case KC_TAB:
     case KC_SPACE:
+    case SANDS:
       dprintf("Cancel CapsLock\n");
 #ifdef JIS_KEYCODE
       register_mods(MOD_MASK_SHIFT);
