@@ -15,6 +15,7 @@ enum custom_keycodes {
   DELETE_FORWARD_WORD,
   DELETE_BACKWARD_WORD,
   TOGGLE_US_LIKE,
+  TOGGLE_CAPS_LOCK,
   TOGGLE_EDIT_LAYER,
   TOGGLE_INPUT_LAYER,
   SWITCH_EDIT_LAYER,
@@ -34,6 +35,7 @@ enum tap_dance_code {
 #define DEL_FW    DELETE_FORWARD_WORD
 #define DEL_BW    DELETE_BACKWARD_WORD
 #define TO_USLK   TOGGLE_US_LIKE
+#define TO_CPSLK  TOGGLE_CAPS_LOCK
 #define TO_EDIT   TOGGLE_EDIT_LAYER
 #define TO_INPT   TOGGLE_INPUT_LAYER
 #define SW_EDIT   SWITCH_EDIT_LAYER
@@ -73,6 +75,7 @@ enum tap_dance_code {
 #define OSM_GUI  OSM(MOD_LGUI)
 
 // switching and toggling layers
+#define MO_FN     MO(KL_(FN_KEYS))
 #define MO_LOWER  MO(KL_EDIT)
 #define MO_RAISE  MO(KL_INPUT)
 
@@ -81,6 +84,7 @@ enum tap_dance_code {
   /* default_layer_state */ \
   func(QWERTY),     \
   func(US_LIKE),    \
+  func(CAPS_LOCK),  \
   func(MOD_RSIDE),  \
   func(MOD_SANDS),  \
   /* layer_state */ \
@@ -107,7 +111,6 @@ static const char* layerNameStr_P( enum keymap_layer layer );
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-# define MO_FN    ( MO(KL_(FN_KEYS)) )
   [KL_(QWERTY)] = LAYOUT_JP(
      KC_ESC,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,     KC_8,    KC_9,    KC_0, KC_MINS,  KC_EQL, KC_JYEN, KC_BSPC,
      KC_TAB,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,     KC_I,    KC_O,    KC_P, KC_LBRC, KC_RBRC,
@@ -122,6 +125,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,  KC_GRV, _______,
     _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_BSLS, _______, _______,
     _______, _______, KC_LGUI, KC_LALT, _______,     _______     , _______, KC_RALT, KC_RGUI, _______, _______, _______, _______
+  ),
+
+  [KL_(CAPS_LOCK)] = LAYOUT_JP(
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    KC_CAPS, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    KC_LCTL,   MO_FN, _______, _______, _______,     _______     , _______, _______, _______, _______, _______, _______, _______
   ),
 
   [KL_(MOD_RSIDE)] = LAYOUT_JP(
@@ -181,11 +192,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [KL_(STNG)] = LAYOUT_JP(
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,CLR_DLYR, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_USLK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, DSP_STT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,     TO_SANDS    , _______, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, TO_ARRO, TO_ARRO
+     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,CLR_DLYR, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_USLK, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    TO_CPSLK, XXXXXXX, XXXXXXX, DSP_STT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, XXXXXXX,
+     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,     TO_SANDS    , _______, XXXXXXX, XXXXXXX, XXXXXXX, TO_ARRO, TO_ARRO, TO_ARRO
   ),
 
 };
@@ -271,6 +282,12 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
 
     case TOGGLE_US_LIKE: IF_PRESSED {
       toggle_default_layer( KL_(US_LIKE) );
+      eeconfig_update_default_layer( default_layer_state );
+      return PROCESS_OVERRIDE_BEHAVIOR;
+    } break;
+
+    case TOGGLE_CAPS_LOCK: IF_PRESSED {
+      toggle_default_layer( KL_(CAPS_LOCK) );
       eeconfig_update_default_layer( default_layer_state );
       return PROCESS_OVERRIDE_BEHAVIOR;
     } break;
