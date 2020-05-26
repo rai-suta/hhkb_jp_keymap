@@ -7,6 +7,10 @@
 
 enum custom_keycodes {
   CUSTOM_KEYCODE = SAFE_RANGE,
+  FN_RSFT,
+  FN_APP,
+  FN_RGUI,
+  FN_RCTL,
   UNDO,
   CUT,
   COPY,
@@ -155,8 +159,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_SLEP,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,  KC_INS,  KC_DEL,
     KC_CAPS, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PSCR, KC_SLCK, KC_PAUS,   KC_UP, XXXXXXX,
     _______, KC_VOLD, KC_VOLU, KC_MUTE, KC_EJCT, XXXXXXX, KC_PAST, KC_PSLS, KC_HOME, KC_PGUP, KC_LEFT, KC_RGHT, XXXXXXX, KC_PENT,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, XXXXXXX, KC_RSFT, _______,
-    _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  KC_APP, KC_RGUI, KC_RCTL
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_PPLS, KC_PMNS,  KC_END, KC_PGDN, KC_DOWN, XXXXXXX, FN_RSFT, _______,
+    _______, _______, _______, _______, _______,     _______     , _______, _______, _______, _______,  FN_APP, FN_RGUI, FN_RCTL
   ),
 
   [KL_(EDIT)] = LAYOUT_JP(
@@ -218,6 +222,7 @@ static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
 #define PROCESS_OVERRIDE_BEHAVIOR   false
 #define PROCESS_USUAL_BEHAVIOR      true
 #define IF_PRESSED                  if (record->event.pressed)
+#define default_layer_state_cmp(layer)  layer_state_cmp(default_layer_state, (layer))
 static void cancel_capsLock(uint16_t keycode);
 static void process_undo(void);
 static void process_cut(void);
@@ -245,6 +250,38 @@ process_record_user(uint16_t keycode, keyrecord_t *record)
   cancel_capsLock(keycode);
 
   switch (keycode) {
+    case FN_RSFT: {
+      uint16_t kc = default_layer_state_cmp(KL_(MOD_RSIDE)) ? KC_UP : KC_RSFT;
+      IF_PRESSED
+        register_code(kc);
+      else
+        unregister_code(kc);
+    } return PROCESS_OVERRIDE_BEHAVIOR;
+
+    case FN_APP: {
+      uint16_t kc = default_layer_state_cmp(KL_(MOD_RSIDE)) ? KC_LEFT : KC_APP;
+      IF_PRESSED
+        register_code(kc);
+      else
+        unregister_code(kc);
+    } return PROCESS_OVERRIDE_BEHAVIOR;
+
+    case FN_RGUI: {
+      uint16_t kc = default_layer_state_cmp(KL_(MOD_RSIDE)) ? KC_DOWN : KC_RGUI;
+      IF_PRESSED
+        register_code(kc);
+      else
+        unregister_code(kc);
+    } return PROCESS_OVERRIDE_BEHAVIOR;
+
+    case FN_RCTL: {
+      uint16_t kc = default_layer_state_cmp(KL_(MOD_RSIDE)) ? KC_RGHT : KC_RCTL;
+      IF_PRESSED
+        register_code(kc);
+      else
+        unregister_code(kc);
+    } return PROCESS_OVERRIDE_BEHAVIOR;
+
     case UNDO: IF_PRESSED {
       process_undo();
       return PROCESS_OVERRIDE_BEHAVIOR;
