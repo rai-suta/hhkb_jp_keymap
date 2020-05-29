@@ -223,6 +223,8 @@ static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
 #define PROCESS_USUAL_BEHAVIOR      true
 #define IF_PRESSED                  if (record->event.pressed)
 #define default_layer_state_cmp(layer)  layer_state_cmp(default_layer_state, (layer))
+#define register_code_wait(kc)      register_code(kc), wait_ms(10)
+#define unregister_code_wait(kc)    unregister_code(kc), wait_ms(10)
 static void cancel_capsLock(uint16_t keycode);
 static void process_undo(void);
 static void process_cut(void);
@@ -398,12 +400,12 @@ void tap_dance_select(qk_tap_dance_state_t *state, void *user_data)
   }
   else if (state->count == 2) {
     // select word
-    register_code(KC_LCTL);
+    register_code_wait(KC_LCTL);
     tap_code(KC_RIGHT);
-    register_code(KC_LSFT);
+    register_code_wait(KC_LSFT);
     tap_code(KC_LEFT);
-    unregister_code(KC_LSFT);
-    unregister_code(KC_LCTL);
+    unregister_code_wait(KC_LSFT);
+    unregister_code_wait(KC_LCTL);
   }
   else {
     // ignore
