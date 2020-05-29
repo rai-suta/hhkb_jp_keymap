@@ -223,8 +223,8 @@ static uint16_t getKeycode_fromDefaultLayer( keyrecord_t *record );
 #define PROCESS_USUAL_BEHAVIOR      true
 #define IF_PRESSED                  if (record->event.pressed)
 #define default_layer_state_cmp(layer)  layer_state_cmp(default_layer_state, (layer))
-#define register_code_wait(kc)      register_code(kc), wait_ms(10)
-#define unregister_code_wait(kc)    unregister_code(kc), wait_ms(10)
+#define register_code_wait(kc)      register_code(kc), wait_ms(TAP_CODE_DELAY)
+#define unregister_code_wait(kc)    unregister_code(kc), wait_ms(TAP_CODE_DELAY)
 static void cancel_capsLock(uint16_t keycode);
 static void process_undo(void);
 static void process_cut(void);
@@ -461,9 +461,9 @@ process_undo(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
+  register_code_wait(KC_LCTL);
   tap_code(KC_Z);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LCTL);
 
   restore_mods();
 }
@@ -473,9 +473,9 @@ process_cut(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
+  register_code_wait(KC_LCTL);
   tap_code(KC_X);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LCTL);
 
   restore_mods();
 }
@@ -485,9 +485,9 @@ process_copy(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
+  register_code_wait(KC_LCTL);
   tap_code(KC_C);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LCTL);
 
   restore_mods();
 }
@@ -497,9 +497,9 @@ process_paste(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
+  register_code_wait(KC_LCTL);
   tap_code(KC_V);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LCTL);
 
   restore_mods();
 }
@@ -509,9 +509,9 @@ process_redo(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
+  register_code_wait(KC_LCTL);
   tap_code(KC_Y);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LCTL);
 
   restore_mods();
 }
@@ -521,11 +521,11 @@ process_delete_forward_word(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
-  register_code(KC_LSFT);
+  register_code_wait(KC_LCTL);
+  register_code_wait(KC_LSFT);
   tap_code(KC_RGHT);
-  unregister_code(KC_LSFT);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LSFT);
+  unregister_code_wait(KC_LCTL);
   tap_code(KC_DEL);
 
   restore_mods();
@@ -536,11 +536,11 @@ process_delete_backward_word(void)
 {
   store_mods();
 
-  register_code(KC_LCTL);
-  register_code(KC_LSFT);
+  register_code_wait(KC_LCTL);
+  register_code_wait(KC_LSFT);
   tap_code(KC_LEFT);
-  unregister_code(KC_LSFT);
-  unregister_code(KC_LCTL);
+  unregister_code_wait(KC_LSFT);
+  unregister_code_wait(KC_LCTL);
   tap_code(KC_DEL);
 
   restore_mods();
@@ -597,19 +597,19 @@ process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
   if (isolayout) {
     switch (keycode) {
       case KC_9: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_9);
         tap_code(KC_0);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
 
       case KC_LBRACKET: {
         if (shiftmod) {
-          register_code(KC_LSFT);
+          register_code_wait(KC_LSFT);
           tap_code(KC_LBRACKET);
           tap_code(KC_RBRACKET);
-          unregister_code(KC_LSFT);
+          unregister_code_wait(KC_LSFT);
           tap_code(KC_LEFT);
         }
         else {
@@ -620,19 +620,19 @@ process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
       } break;
 
       case KC_COMMA: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_COMMA);
         tap_code(KC_DOT);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
 
       case KC_QUOT: {
         if (shiftmod) {
-          register_code(KC_LSFT);
+          register_code_wait(KC_LSFT);
           tap_code(KC_QUOT);
           tap_code(KC_QUOT);
-          unregister_code(KC_LSFT);
+          unregister_code_wait(KC_LSFT);
           tap_code(KC_LEFT);
         }
         else {
@@ -652,19 +652,19 @@ process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
   else {
     switch (keycode) {
       case KC_8: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_8);
         tap_code(KC_9);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
 
       case KC_RBRACKET: {
         if (shiftmod) {
-          register_code(KC_LSFT);
+          register_code_wait(KC_LSFT);
           tap_code(KC_RBRACKET);
           tap_code(KC_BSLS);
-          unregister_code(KC_LSFT);
+          unregister_code_wait(KC_LSFT);
           tap_code(KC_LEFT);
         }
         else {
@@ -675,34 +675,34 @@ process_INPUT_PAIRED_BRANKETS(keyrecord_t *record)
       } break;
 
       case KC_COMMA: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_COMMA);
         tap_code(KC_DOT);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
 
       case KC_7: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_7);
         tap_code(KC_7);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
 
       case KC_2: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_2);
         tap_code(KC_2);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
 
       case KC_LBRC: {
-        register_code(KC_LSFT);
+        register_code_wait(KC_LSFT);
         tap_code(KC_LBRC);
         tap_code(KC_LBRC);
-        unregister_code(KC_LSFT);
+        unregister_code_wait(KC_LSFT);
         tap_code(KC_LEFT);
       } break;
     }
