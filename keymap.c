@@ -407,6 +407,13 @@ void tap_dance_select(qk_tap_dance_state_t *state, void *user_data)
     unregister_code_wait(KC_LSFT);
     unregister_code_wait(KC_LCTL);
   }
+  else if (state->count == 3) {
+    // select line
+    tap_code(KC_END);
+    register_code_wait(KC_LSFT);
+    tap_code(KC_HOME);
+    unregister_code_wait(KC_LSFT);
+  }
   else {
     // ignore
   }
