@@ -1,6 +1,4 @@
-#include "hhkb.h"
-#include "config.h"
-#include "action_macro.h"
+#include QMK_KEYBOARD_H
 #ifdef JIS_KEYCODE
  #include "sendstring_jis.h"
 #endif

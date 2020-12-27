@@ -6,6 +6,6 @@ This is a keymap setting for ["Alt Controller Board for HHKB JP"](https://geekha
 
 Execute the following command in the qmk_firmware directory.
 ```
-$ git submodule add https://github.com/rai-suta/hhkb_jp_keymap.git "keyboards/hhkb/keymaps/raisuta_jp"
-$ make hhkb:raisuta_jp:dfu
+$ git submodule add https://github.com/rai-suta/hhkb_jp_keymap.git "keyboards/hhkb/jp/keymaps/raisuta_jp"
+$ make hhkb/jp:raisuta_jp:dfu
 ```

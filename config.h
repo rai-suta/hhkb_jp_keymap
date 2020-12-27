@@ -1,7 +1,7 @@
 #ifndef CONFIG_RAISUTA_H
 #define CONFIG_RAISUTA_H
 
-#include "keyboards/hhkb/config.h"
+#include "keyboards/hhkb/jp/config.h"
 
 // quantum function settings
 #undef  TAPPING_TERM
